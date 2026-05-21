@@ -1,0 +1,12 @@
+name = "FiniteVolumes"
+uuid = "f5d106ee-a13c-4ec4-be1c-23882ad05362"
+version = "0.1.0"
+authors = ["Basile Mouret <145753507+Basile-Mouret@users.noreply.github.com>"]
+
+[deps]
+Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
+Typstry = "f0ed7684-a786-439e-b1e3-3b82803b501e"
+
+[compat]
+Pluto = "0.20.25"
+Typstry = "0.7.0"
