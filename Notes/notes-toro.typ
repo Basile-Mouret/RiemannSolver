@@ -28,9 +28,15 @@
 
 
 
+
+#set page(numbering: "1")
+#counter(page).update(1)
+#counter(heading).update(0)
+#show link: set text(fill: blue)
+
 == Notations
 
-- $ u = u(x_1, x_2, ..., x_m, t)$
+- $u = u(x_1, x_2, ..., x_m, t)$
 
 $u_t$ : Derivative of u by t
 
@@ -44,5 +50,7 @@ $Delta u = sum_i (partial^2 u)/(partial x_i^2) $ Laplacian of u
 
 $nabla U = ((partial u_i)/(partial x_j))_(i,j) = (nabla u_i^T)_i$ : Jacobian of U is a matrix
 
+#pagebreak()
 #include "chapters/1-Equations_of_Fluid_Dynamics.typ"
+#pagebreak()
 #include "chapters/2-Notions_on_Hyperbolic_PDEs.typ"
