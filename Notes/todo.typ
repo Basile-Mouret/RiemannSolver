@@ -14,7 +14,23 @@ With $E = rho(1/2 u^2 + e)$
 
 Comprendre la différence entre shéma volumes finis, solveur de riemann et modèle de godunov.
 
-- vim : w, b, e, ?, learn right  and "". use around and inner.
+- Comprendre et traduire le solveur de Riemann 1D proposé dans Toro (Résumer chap 3 et surtout 4)
+
+- Comprendre et traduire le modèle de Godunov dans Toro (Résumer chap 5)
+
+- Regarder la 2D
+
+
+
+VIM :
+- avoir le go to definition
+- utiliser jk
+- utiliser w,b,e
+- utiliser inner
+- regarder pour commenter rapidement plusieurs lignes
+- regarder pour que indentation garde sélection
+- regarder pour que (), "", etc garde la sélection
+
 
 
 

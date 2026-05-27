@@ -26,8 +26,9 @@ with $e$ the specific internal energy.
 
 This can be rewritten as a conservation law:
 $
-  U_t + F(U)_x  + G(U)_y + H(U)_z = 0
+  U_t +F(U)_x  + G(U)_y + H(U)_z = 0
 $
+where $F, G "and" H$ are fluxes.\
 and in divergence form:
 $
 U_t + nabla dot H = 0

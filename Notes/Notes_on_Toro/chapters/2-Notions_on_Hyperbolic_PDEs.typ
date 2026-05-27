@@ -1,4 +1,3 @@
-
 = Notions on Hyperbolic Partial Differential Equations
 
 We consider _hyperbolic PDEs_ and _hyperbolic conservations laws_\
@@ -136,25 +135,25 @@ now $lambda_i$ depend on $U$
 === Integral forms of Conservation laws.
 To allow for discontinuities, we write conservaiton laws in integral form.
 
-=== Form I
+- Form I
 
 $
 dif/(dif t)integral_(x_R)^x_L U(x,t) dif x = F(U(x_L, t)) - F(U(x_L, t))
 $
 
-=== Form II
+- Form II
 
 $
 integral_(x_L)^x_R U(x,t_1) - U(x,t_2) dif x = integral_(t_1)^(t_2) F(U(x_L, t)) - F(U(x_L, t)) dif t
 $
 
-=== Form III
+- Form III
 
 $
 integral.cont [U dif x - F(U) dif t] = 
 $
 
-=== System of conseration laws
+==== System of conseration laws
  constructed from linear system using $F(U) = A U$
 
 === Non linearities an Shock Formation
@@ -183,5 +182,29 @@ $
 Wolfram Math alpha tells me $f''$ has two real roots so The buckely Leverett flux is non convex non concave.
 
 
+
+==== Wave Steepening
+
+==== Shock Waves
+
+==== Rarefaction Waves
+
+=== Characteristic Fields
+
+==== Rankine-Hugoniot Conditions
+
+$
+Delta F = S_i Delta U
+$
+
+==== Generalized Riemann Invariants
+
+Do the exercise 2.4.7
+
+=== Elementary-Wave Solutions of th Riemann Problem
+
+- Shock Wave
+- Contact Wave
+- Rarefaction Wave
 
 
