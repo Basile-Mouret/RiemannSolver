@@ -24,3 +24,23 @@ function generate_1DMesh(x0::Float64, x1::Float64, N::Int, periodic::Bool)
     return Mesh1D(x, Cells, Faces, BoundaryFaces)
 end
 
+"""
+computes a 1D, second order quadrature
+"""
+function quadrature_1D(x1::Float64, x2::Float64, f::Function)
+    return (x2 - x1)/2 * (f(-(x2-x1)/(2*sqrt(3)) + (x1+x2)/2) + f((x2-x1)/(2*sqrt(3)) + (x1+x2)/2))
+end
+
+"""
+computes L2 error on a 1D mesh
+"""
+function compute_L2_1D(mesh::Mesh1D, u::Vector{Float64}, u_exact::Function)
+    error = 0.0
+    for (i, (n1, n2)) in enumerate(mesh.Cells)
+        x1 = mesh.x[n1]
+        x2 = mesh.x[n2]
+        error += quadrature_1D(x1, x2, x -> (u[i] - u_exact(x))^2)
+    end
+    return sqrt(error)
+end
+
