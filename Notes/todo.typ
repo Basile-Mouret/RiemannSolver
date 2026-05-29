@@ -11,16 +11,20 @@ cases(
 $
 With $E = rho(1/2 u^2 + e)$
 
+TODO :
+- changer pour utiliser gmsh (extraire donnnées d'un fichier, convertir gmsh -> Mesh2D, et pourquoi pas construire des mesh en julia)
+- transport 2D conditions de bord (periodique ou function)
 
-Comprendre la différence entre shéma volumes finis, solveur de riemann et modèle de godunov.
+- Waves 1D
+- Burgers 1D
+
+- Ecrire rapport sur ça
+
+- Euler 1D (Godunov, Solveur de Riemann exact/approché)
 
 - Comprendre et traduire le solveur de Riemann 1D proposé dans Toro (Résumer chap 3 et surtout 4)
 
 - Comprendre et traduire le modèle de Godunov dans Toro (Résumer chap 5)
-
-- Regarder la 2D
-
-
 
 VIM :
 - avoir le go to definition
@@ -31,6 +35,9 @@ VIM :
 - regarder pour que indentation garde sélection
 - regarder pour que (), "", etc garde la sélection
 
+Julia:
+- CamelCase pour struct
+- snake_case pour variables
 
 
-
+Questions :  Utiliser GMSH sur 1D aussi?
