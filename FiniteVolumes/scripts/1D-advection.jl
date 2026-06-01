@@ -110,6 +110,7 @@ function main()
     # solve
     xmid, U_hist, U_exact_hist = solve_transport_1D(mesh, c, n_timesteps, dx, dt, u0, ub=ub, flux_type="upwind")
 
+    println
     # plot initial condition
     display(plot1D(xmid, u0.(xmid); title="Initial condition"))
 

@@ -18,7 +18,10 @@ TODO :
 - Waves 1D
 - Burgers 1D
 
+- clean up -> avoir des fonction généralisable entre sytemes/scalaire et 1D/2D, utiliser les bon types
+
 - Ecrire rapport sur ça
+
 
 - Euler 1D (Godunov, Solveur de Riemann exact/approché)
 

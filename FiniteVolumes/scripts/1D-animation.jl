@@ -24,6 +24,7 @@ function plot1D(xmid::Vector{Float64}, u::Vector{Float64}; u_exact=nothing, titl
     # Return the figure
     return fig
 end
+
 function plot1D(xmid::AbstractVector{<:Real}, u::AbstractVector{<:Real}, v::AbstractVector{<:Real}; u_exact=nothing, v_exact=nothing, title::String="Finite Volume Plot")
     # Initialize Figure
     fig = Figure(size = (800, 1000))
@@ -58,7 +59,8 @@ is uses the stairs method to plot the piecewise constant data.
 """
 function animate_1D_solution(xmid, U_hist, U_exact_hist, filename::String)
     fig_anim = Figure(size = (800, 500))
-    ax_anim = Axis(fig_anim[1, 1], limits = (minimum(xmid), maximum(xmid), -1.5, 1.5))
+    # ax_anim = Axis(fig_anim[1, 1], limits = (minimum(xmid), maximum(xmid), -1.5, 1.5))
+    ax_anim = Axis(fig_anim[1, 1])
 
     # Observables bound to the first frame
     obs_numerical = Observable(U_hist[1])
