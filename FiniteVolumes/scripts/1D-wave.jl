@@ -18,9 +18,9 @@ function get_flux_wave_1D(UL::Vector{Float64}, UR::Vector{Float64}, κ::Float64,
 end
 
 """
-Solves a transport step
+Solves a wave step
 """
-function step_transport!(new_cell_values, cell_values, mesh, dt, dx, step, κ::Float64, ρ::Float64, Ubr, Ubl)
+function step_wave!(new_cell_values, cell_values, mesh, dt, dx, step, κ::Float64, ρ::Float64; Ubr, Ubl)
     # interior nodes
     for (CL,CR) in mesh.Faces
         if CL!=0 && CR!=0
@@ -47,6 +47,38 @@ function solve_wave_1D(mesh::Mesh1D, n_timesteps::Int, dx::Real, dt::Real, u0::F
     v0 = 0.5*p0-(0.5/(ρ*c))*u0
     w0 = 0.5*p0+(0.5/(ρ*c))*u0
 
+    x0, x1 = mesh.x[1], mesh.x[end]
+    xmid = (mesh.x[1:end-1] + mesh.x[2:end]) / 2
+    
+    u = u0.(xmid)
+    u_new = copy(u)
+    
+    u_hist = [copy(u)]
+    u_exact_hist = [copy(u)]
+
+    p = p0.(xmid)
+    p_new = copy(p)
+    p_history = [copy(cell_values)]
+    p_exact_history = [copy(cell_values)]
+
+    for step in 1:n_timesteps
+        step_wave!(new_cell_values, cell_values, mesh, dt, dx, step, κ, ρ)
+        cell_values .= new_cell_values
+
+        # exact solution 
+        if length(mesh.BoundaryFaces) == 0
+            vtrue = v0.(mod.(xmid .- c*dt*step, x1-x0))
+            wtrue = w0.(mod.(xmid .+ c*dt*step, x1-x0))
+            ptrue = vtrue.+wtrue
+            utrue = (ρ*c)*(wtrue.-vtrue)
+        end
+
+        # save states
+        push!(U_history, copy(cell_values))
+        push!(U_exact_history, copy(utrue))
+    end
+    
+    return xmid, U_history, U_exact_history
 
     
 
