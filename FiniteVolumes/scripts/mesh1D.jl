@@ -19,6 +19,8 @@ function generate_1DMesh(x0::Float64, x1::Float64, N::Int, periodic::Bool)
         push!(Faces, (N, 1))
         BoundaryFaces = Int[]
     else
+        push!(Faces, (N, 0))
+        push!(Faces, (0, 1))
         BoundaryFaces = [1, N]
     end
     return Mesh1D(x, Cells, Faces, BoundaryFaces)

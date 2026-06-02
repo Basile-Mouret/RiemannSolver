@@ -1,73 +1,54 @@
-
 include("mesh1D.jl")
 include("1D-animation.jl")
+# Inviscid Burgers Equation
+# uₜ+f(u)ₓ with f(u) = ½u² on [0, 1.5]
+# initial condtions in Toro : u(x,0) = cases(-1/2 "if" x <= 1/2, 1 "if" 1/2 <= x<= 1, 0 if x>=0)
 
 """
 computes the flux for the transport
 """
-function fluxTransport1D(c, UL, UR ; type="upwind")
-    if type == "upwind"
-        return c > 0 ? c*UL : c*UR
-    elseif type == "centered"
-        return 0.5*c*(UL+UR) 
-    elseif type == "left"
-        return c*UL 
-    elseif type == "right"
-        return c*UR 
-    end
+function compute_flux_burgers_1D(UL, UR)
+    return
 end
 
 """
 Solves a transport step
 """
-function step_transport!(newCellValues, CellValues, mesh, c, dt, dx, step, flux_type, ub)
+function step_burgers!(new_cell_values, cell_values, mesh, c, dt, dx, step; ub=(x->0))
     # interior nodes
     for (CL,CR) in mesh.Faces
         if CL!=0 && CR!=0
-            UL = CellValues[CL]
-            UR = CellValues[CR]
-            F = fluxTransport1D(c, UL, UR, type=flux_type)
-            newCellValues[CL] -= (dt/dx) * F
-            newCellValues[CR] += (dt/dx) * F
+            UL = cell_values[CL]
+            UR = cell_values[CR]
+            F = compute_flux_burgers_1D(UL, UR)
+            new_cell_values[CL] -= (dt/dx) * F
+            new_cell_values[CR] += (dt/dx) * F
         end
     end
 
     # boundary conditions
-    if length(mesh.BoundaryFaces) > 0
-        if c > 0
-            F_in = c * ub(dt*step)
-            F_out = c * CellValues[end]
-            newCellValues[1] += (dt/dx) * F_in
-            newCellValues[end] -= (dt/dx) * F_out
-        else
-            F_in = c * ub(dt*step)
-            F_out = c * CellValues[1]
-            newCellValues[end] -= (dt/dx) * F_in
-            newCellValues[1] += (dt/dx) * F_out
-        end
-    end
 end
 
 """
 Solves transport over some timesteps
 """
-function solve_transport_1D(mesh::Mesh1D, c::Float64, n_timesteps::Int, dx::Float64, dt::Float64, u0::Function; ub::Function, flux_type::String="upwind")
+function solve_burgers_1D(mesh::Mesh1D, n_timesteps::Int, dx::Float64, dt::Float64, u0::Function; ub::Function)
     x0, x1 = mesh.x[1], mesh.x[end]
     xmid = (mesh.x[1:end-1] + mesh.x[2:end]) / 2
     
-    CellValues = u0.(xmid)
-    newCellValues = copy(CellValues)
+    cell_values = u0.(xmid)
+    newcell_values = copy(cell_values)
     
-    println("Initial L2 Error: ", compute_L2_1D(mesh, CellValues, u0))
+    println("Initial L2 Error: ", compute_L2_1D(mesh, cell_values, u0))
 
-    U_history = [copy(CellValues)]
-    U_exact_history = [copy(CellValues)]
+    U_history = [copy(cell_values)]
+    U_exact_history = [copy(cell_values)]
 
     for step in 1:n_timesteps
-        step_transport!(newCellValues, CellValues, mesh, c, dt, dx, step, flux_type, ub)
-        CellValues .= newCellValues
+        step_burgers!(newcell_values, cell_values, mesh, c, dt, dx, step)
+        cell_values .= newcell_values
 
-        # exact solution 
+        # exact solution  TODO
         if length(mesh.BoundaryFaces) == 0
             utrue = u0.(mod.(xmid .- c*dt*step, x1-x0))
         else
@@ -79,12 +60,13 @@ function solve_transport_1D(mesh::Mesh1D, c::Float64, n_timesteps::Int, dx::Floa
         end
 
         # save states
-        push!(U_history, copy(CellValues))
+        push!(U_history, copy(cell_values))
         push!(U_exact_history, copy(utrue))
     end
     
     return xmid, U_history, U_exact_history
 end
+
 function main()
     # Parameters
     x0 = 0.0
@@ -92,13 +74,12 @@ function main()
     N = 100
 
     # Initial condition
-    #u0(x) = sin(2π*x)
-    u0(x) = 0*x 
+    u0(x) = sin(2π*x)
+    #u0(x) = 0*x 
     # Boundary Conditions
-    ub(t) = sin(4*π*t) 
+    # ub(t) = sin(4*π*t) 
 
     # propagation speed
-    c = 1.5
 
     # Generate mesh
     periodic = false
@@ -109,13 +90,13 @@ function main()
     n_timesteps = 100
 
     # solve
-    xmid, U_hist, U_exact_hist = solve_transport_1D(mesh, c, n_timesteps, dx, dt, u0, ub=ub, flux_type="upwind")
+    xmid, U_hist, U_exact_hist = solve_burgers_1D(mesh, n_timesteps, dx, dt, u0)
 
     # plot initial condition
     display(plot1D(xmid, u0.(xmid); title="Initial condition"))
 
     # animate
-    anim_file = "media/advection_1d.mp4"
+    anim_file = "media/burgers_1d.mp4"
     animate_1D_solution(xmid, U_hist, U_exact_hist, anim_file)
     
     # open animation
