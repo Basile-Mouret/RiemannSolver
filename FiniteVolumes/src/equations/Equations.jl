@@ -1,7 +1,7 @@
 abstract type AbstractEquation1D end
 
 num_vars(::AbstractEquation1D)::Int = error("num_vars not implemented")
-max_wave_speed(::AbstractEquation1D)::Float64 = error("max_wave_speed not implemented")
+max_wave_speed(::AbstractEquation1D, values::Matrix{Float64}, Mesh::Mesh1D)::Float64 = error("max_wave_speed not implemented")
 
 function flux(eq::AbstractEquation1D, uL::Vector{Float64}, uR::Vector{Float64})::Vector{Float64}
     error("flux not implemented for $(typeof(eq))")

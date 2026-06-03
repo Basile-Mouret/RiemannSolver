@@ -12,6 +12,7 @@ eq = Wave1D(kappa, rho)
 bcs = Dict(:left => Reflecting(), :right => Outflow())
 
 p0(x) = 0.2 < x < 0.4 ? 100 * exp(0.1 / ((x - 0.2) * (x - 0.4))) : 0.0
+p0(x) = sin(2*pi*x)
 u0_func(x) = 0.0
 
 ic(x) = [p0(x), u0_func(x)]
@@ -24,7 +25,11 @@ v0(x) = 0.5 * p0(x) - u0_func(x) * 0.5 / (rho * c)
 w0(x) = 0.5 * p0(x) + u0_func(x) * 0.5 / (rho * c)
 display(plot1D(xmid, v0.(xmid), w0.(xmid); title = "Initial characteristic variables"))
 
-xmid, U_hist, U_exact_hist = solve(mesh, eq, bcs, ic; nsteps = 1000)
+max_time_steps = 100
+final_time = 1.0
+CFL = 0.8
+
+xmid, U_hist, U_exact_hist = solve(mesh, eq, bcs, ic; max_time_steps = max_time_steps, CFL = CFL, final_time=1.0)
 
 entropy_hist = [entropy(eq, mat, cell_width(mesh)) for mat in U_hist]
 display(plot(entropy_hist))

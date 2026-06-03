@@ -5,7 +5,7 @@ end
 
 num_vars(::Wave1D) = 2
 
-max_wave_speed(eq::Wave1D) = sqrt(eq.kappa / eq.rho)
+max_wave_speed(eq::Wave1D, values::Matrix{Float64}, Mesh::Mesh1D ) = sqrt(eq.kappa / eq.rho)
 
 function flux(eq::Wave1D, uL::Vector{Float64}, uR::Vector{Float64})
     pl, ul = uL[1], uL[2]

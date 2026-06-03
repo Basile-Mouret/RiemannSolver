@@ -1,12 +1,10 @@
-struct Burgers1D <: AbstractEquation1D
-    max_abs_u0::Float64
-end
+struct Burgers1D <: AbstractEquation1D end
 
 num_vars(::Burgers1D) = 1
 
-max_wave_speed(eq::Burgers1D) = eq.max_abs_u0
+max_wave_speed(::AbstractEquation1D, values::Matrix{Float64}, Mesh::Mesh1D)::Float64 = maximum(abs.(values))
 
-function flux(eq::Burgers1D, Ul::Vector{Float64}, Ur::Vector{Float64})
+function flux(::Burgers1D, Ul::Vector{Float64}, Ur::Vector{Float64})
     f(x) = 0.5*x*x
     ul, ur = Ul[1], Ur[1]
     if ul > ur

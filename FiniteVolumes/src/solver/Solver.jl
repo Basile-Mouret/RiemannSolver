@@ -7,7 +7,7 @@ function solve(
     bcs,
     ic::Function;
     max_time_steps::Int,
-    final_time::Int,
+    final_time::Float64,
     CFL::Float64 = 0.9,
     compute_exact::Bool = true
 )
@@ -26,10 +26,13 @@ function solve(
     U_history = [copy(values)]
     U_exact_hist = [copy(values)]
 
-    for step in 1:nsteps
-
-
+    step = 0
+    t = 0.0
+    while t < final_time && step < max_time_steps
+        # compute adaptive dt
+        dt = CFL*dx/max_wave_speed(eq, values, mesh)
         t = dt * (step - 1)
+
         new_values .= values
 
         explicit_euler_step!(new_values, values, mesh, eq, bcs, dt, dx, t)
@@ -45,6 +48,8 @@ function solve(
         else
             push!(U_exact_hist, copy(values))
         end
+        t+=dt
+        step+=1
     end
 
     return xmid, U_history, U_exact_hist
