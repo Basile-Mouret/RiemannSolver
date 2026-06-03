@@ -25,31 +25,31 @@ function solve(
 
     U_history = [copy(values)]
     U_exact_hist = [copy(values)]
+    dt_hist = Float64[]
 
     step = 0
     t = 0.0
     while t < final_time && step < max_time_steps
-        # compute adaptive dt
-        dt = CFL*dx/max_wave_speed(eq, values, mesh)
+        dt = CFL * dx / max_wave_speed(eq, values, mesh)
 
         new_values .= values
 
         explicit_euler_step!(new_values, values, mesh, eq, bcs, dt, dx, t)
         values .= new_values
+        t += dt
+        step += 1
 
+        push!(dt_hist, dt)
         push!(U_history, copy(values))
 
         if compute_exact
-            t_end = dt * step
             exact = zeros(N, nvars)
-            exact_solution!(exact, eq, xmid, ic, bcs, x0, x1, t_end)
+            exact_solution!(exact, eq, xmid, ic, bcs, x0, x1, t)
             push!(U_exact_hist, copy(exact))
         else
             push!(U_exact_hist, copy(values))
         end
-        t+=dt
-        step+=1
     end
 
-    return xmid, U_history, U_exact_hist
+    return xmid, U_history, U_exact_hist, [0.0; dt_hist]
 end

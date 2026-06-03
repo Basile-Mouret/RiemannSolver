@@ -29,7 +29,7 @@ max_time_steps = 100
 final_time = 1.0
 CFL = 0.8
 
-xmid, U_hist, U_exact_hist = solve(mesh, eq, bcs, ic; max_time_steps = max_time_steps, CFL = CFL, final_time=1.0)
+xmid, U_hist, U_exact_hist, dt_hist = solve(mesh, eq, bcs, ic; max_time_steps = max_time_steps, CFL = CFL, final_time=1.0)
 
 entropy_hist = [entropy(eq, mat, cell_width(mesh)) for mat in U_hist]
 display(plot(entropy_hist))
@@ -39,8 +39,8 @@ u_hist = [mat[:, 2] for mat in U_hist]
 p_exact_hist = [mat[:, 1] for mat in U_exact_hist]
 u_exact_hist = [mat[:, 2] for mat in U_exact_hist]
 
-animate_1D_solution(xmid, u_hist, "media/wave_u_1d.mp4"; U_exact_hist = u_exact_hist)
+animate_1D_solution(xmid, u_hist, "media/wave_u_1d.mp4"; U_exact_hist = u_exact_hist, dt_hist = dt_hist)
 run(`xdg-open media/wave_u_1d.mp4`)
 
-animate_1D_solution(xmid, p_hist, "media/wave_p_1d.mp4"; U_exact_hist = p_exact_hist)
+animate_1D_solution(xmid, p_hist, "media/wave_p_1d.mp4"; U_exact_hist = p_exact_hist, dt_hist = dt_hist)
 run(`xdg-open media/wave_p_1d.mp4`)
