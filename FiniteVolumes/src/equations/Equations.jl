@@ -11,3 +11,4 @@ function exact_solution!(utrue::Matrix{Float64}, eq::AbstractEquation1D, xmid::V
                          ic::Function, bcs::Dict, x0::Float64, x1::Float64, t::Float64)
     error("exact_solution! not implemented for $(typeof(eq))")
 end
+

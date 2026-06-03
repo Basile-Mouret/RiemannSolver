@@ -10,17 +10,25 @@ cases(
 )
 $
 With $E = rho(1/2 u^2 + e)$
+DONE : 
+- Waves 1D
+- Burgers 1D
+- clean up -> avoir des fonction généralisable entre sytemes/scalaire et 1D/2D, utiliser les bon types
+
+-> static delta t, doesn't work for non linear case, we have to recompute delta t at each time step
 
 TODO :
+- delta t adaptatifs, animation avec delta t adaptatif, afficher le temps et le nombres de steps
+- utiliser des static vectors (pour ne pas allouer en mémoire)
+- 
+
+- Ecrire rapport sur 1D
+
+
 - changer pour utiliser gmsh (extraire donnnées d'un fichier, convertir gmsh -> Mesh2D, et pourquoi pas construire des mesh en julia)
 - transport 2D conditions de bord (periodique ou function)
 
-- Waves 1D
-- Burgers 1D
 
-- clean up -> avoir des fonction généralisable entre sytemes/scalaire et 1D/2D, utiliser les bon types
-
-- Ecrire rapport sur ça
 
 
 - Euler 1D (Godunov, Solveur de Riemann exact/approché)

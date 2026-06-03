@@ -24,10 +24,6 @@ function flux(eq::Advection1D, uL::Vector{Float64}, uR::Vector{Float64})
     return [F]
 end
 
-function apply_ghost(bc::Dirichlet, u_interior::Vector{Float64}, t::Float64)
-    return [bc.value(t)]
-end
-
 function exact_solution!(utrue::Matrix{Float64}, eq::Advection1D, xmid::Vector{Float64},
                          ic::Function, bcs::Dict, x0::Float64, x1::Float64, t::Float64)
     c = eq.c

@@ -15,3 +15,8 @@ end
 function apply_ghost(bc::Outflow, u_interior::Vector{Float64}, ::Float64)
     return copy(u_interior)
 end
+
+function apply_ghost(bc::Dirichlet, u_interior::Vector{Float64}, t::Float64)
+    return [bc.value(t)]
+end
+

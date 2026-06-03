@@ -6,20 +6,15 @@ function solve(
     eq::AbstractEquation1D,
     bcs,
     ic::Function;
-    dt::Float64 = 0.0,
-    nsteps::Int,
-    CFL::Float64 = 0.8,
+    max_time_steps::Int,
+    final_time::Int,
+    CFL::Float64 = 0.9,
     compute_exact::Bool = true
 )
     xmid = cell_centers(mesh)
     dx = cell_width(mesh)
     x0, x1 = mesh.x[1], mesh.x[end]
     nvars = num_vars(eq)
-
-    if dt <= 0.0
-        c_max = max_wave_speed(eq)
-        dt = CFL * dx / c_max
-    end
 
     N = length(mesh.x) - 1
     values = Matrix{Float64}(undef, N, nvars)
@@ -32,6 +27,8 @@ function solve(
     U_exact_hist = [copy(values)]
 
     for step in 1:nsteps
+
+
         t = dt * (step - 1)
         new_values .= values
 
