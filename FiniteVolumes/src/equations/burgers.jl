@@ -2,7 +2,7 @@ struct Burgers1D <: AbstractEquation1D end
 
 num_vars(::Burgers1D) = 1
 
-max_wave_speed(::AbstractEquation1D, values::Matrix{Float64}, Mesh::Mesh1D)::Float64 = maximum(abs.(values))
+max_wave_speed(::Burgers1D, values::Matrix{Float64}, Mesh::Mesh1D)::Float64 = maximum(abs.(values))
 
 function flux(::Burgers1D, Ul::Vector{Float64}, Ur::Vector{Float64})
     f(x) = 0.5*x*x

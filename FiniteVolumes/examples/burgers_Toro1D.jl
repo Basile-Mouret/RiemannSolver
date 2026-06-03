@@ -1,21 +1,27 @@
 using CairoMakie
 using FiniteVolumes
 
-x0, x1 = 0.0, 1.0
+x0, x1 = 0.0, 1.5
 N = 100
 
 mesh = generate_1DMesh(x0, x1, N, false)
 eq = Burgers1D()
-bcs = Dict(:left => Dirichlet(t -> abs(cos(4 * π * t))), :right => Outflow())
+bcs = Dict(:left => Outflow(), :right => Outflow())
 
 function u0(x)
-    return sin(2*π*x)
+    if x<= 0.5
+        return -0.5
+    elseif x>=1
+        return 0.0
+    else
+        return 1.0
+    end
 end
 
 CFL = 0.8
 max_time_steps = 1000
 
-xmid, U_hist, U_exact_hist = solve(mesh, eq, bcs, u0; max_time_steps = max_time_steps, CFL = CFL, final_time=2.0)
+xmid, U_hist, U_exact_hist = solve(mesh, eq, bcs, u0; max_time_steps = max_time_steps, CFL = CFL, final_time=0.5)
 
 u0_vals = [u0(x)[1] for x in xmid]
 display(plot1D(xmid, u0_vals; title = "Initial condition"))
