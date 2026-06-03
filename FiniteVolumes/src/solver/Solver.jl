@@ -31,7 +31,6 @@ function solve(
     while t < final_time && step < max_time_steps
         # compute adaptive dt
         dt = CFL*dx/max_wave_speed(eq, values, mesh)
-        t = dt * (step - 1)
 
         new_values .= values
 

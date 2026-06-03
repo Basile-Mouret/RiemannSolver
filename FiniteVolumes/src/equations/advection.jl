@@ -7,7 +7,7 @@ Advection1D(; c::Float64, flux_type::Symbol = :upwind) = Advection1D(c, flux_typ
 
 num_vars(::Advection1D) = 1
 
-max_wave_speed(eq::Advection1D) = abs(eq.c)
+max_wave_speed(eq::Advection1D, ::Matrix{Float64}, ::Mesh1D ) = abs(eq.c) 
 
 function flux(eq::Advection1D, uL::Vector{Float64}, uR::Vector{Float64})
     if eq.flux_type == :upwind
