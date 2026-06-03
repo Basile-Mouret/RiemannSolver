@@ -31,6 +31,9 @@ function solve(
     t = 0.0
     while t < final_time && step < max_time_steps
         dt = CFL * dx / max_wave_speed(eq, values, mesh)
+        if t + dt > final_time
+            dt = final_time - t
+        end
 
         new_values .= values
 

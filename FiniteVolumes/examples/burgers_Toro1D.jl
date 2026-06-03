@@ -18,7 +18,7 @@ function u0(x)
     end
 end
 
-CFL = 0.8
+CFL = 0.9
 max_time_steps = 1000
 
 xmid, U_hist, U_exact_hist, dt_hist = solve(mesh, eq, bcs, u0; max_time_steps = max_time_steps, CFL = CFL, final_time=0.5)
