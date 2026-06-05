@@ -20,8 +20,7 @@ function apply_ghost(bc::Reflecting, u_interior::Vector{Float64}, ::Float64)
     return [u_interior[1], -u_interior[2]]
 end
 
-function exact_solution!(utrue::Matrix{Float64}, eq::Wave1D, xmid::Vector{Float64},
-                         ic::Function, bcs::Dict, x0::Float64, x1::Float64, t::Float64)
+function exact_solution!(utrue::Matrix{Float64}, eq::Wave1D, xmid::Vector{Float64}, ic::Function, bcs::Dict, x0::Float64, x1::Float64, t::Float64)
     N = length(xmid)
     c = sqrt(eq.kappa / eq.rho)
     rho_c = eq.rho * c

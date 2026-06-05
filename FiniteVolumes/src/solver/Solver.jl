@@ -9,7 +9,7 @@ function solve(
     max_time_steps::Int,
     final_time::Float64,
     CFL::Float64 = 0.9,
-    compute_exact::Bool = true
+    compute_exact::Bool = false
 )
     xmid = cell_centers(mesh)
     dx = cell_width(mesh)

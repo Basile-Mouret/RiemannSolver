@@ -3,25 +3,29 @@ using Roots
 """
 Exact Riemann Solver for the 1D Euler system
 """
-function solve_riemann(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, aL::T, aR::T; TOL::T=1e-6) where {T<:Real}
+function solve_riemann(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
     rhoL, uL, pL = WL
     rhoR, uR, pR = WR
+
+    aL = sqrt(gamma*pL/rhoL)
+    aR = sqrt(gamma*pR/rhoR)
 
     # compute p* and u* using Newton
     #   build f
 
-    AL = 2/((gamma+1)+rhoL)
-    BL = (gamma - 1) / ((gamma + 1) * pL)
-    AR = 2/((gamma+1)+rhoR)
-    BR = (gamma - 1) / ((gamma + 1) * pR)
+    AL = 2.0 / ((gamma+1.0) * rhoL)
+    BL = ((gamma-1.0) / (gamma+1.0)) * pL
+    AR = 2.0 / ((gamma+1.0) * rhoR)
+    BR = ((gamma-1.0) / (gamma+1.0)) * pR
 
-    fL(p) = p>pL ? (p-pL)*(sqrt(AL/(p+BL))) : ((2*aL)/(gamma-1)) * ((p/pL)^((gamma-1)/(2*gamma))-1)
-    fR(p) = p>pR ? (p-pR)*(sqrt(AR/(p+BR))) : ((2*aR)/(gamma-1)) * ((p/pR)^((gamma-1)/(2*gamma))-1)
+    fL(p) = p>pL ? (p-pL)*(sqrt(AL/(p+BL))) : ((2.0*aL)/(gamma-1.0)) * ((p/pL)^((gamma-1.0)/(2.0*gamma))-1.0)
+    fR(p) = p>pR ? (p-pR)*(sqrt(AR/(p+BR))) : ((2.0*aR)/(gamma-1.0)) * ((p/pR)^((gamma-1.0)/(2.0*gamma))-1.0)
     f(p) = fL(p) + fR(p) + (uR - uL)
 
     # build f'
-    dfL(p) = p>pL ? sqrt(AL/(BL+p)) * (1.0 - (p-pL)/(2*(BL+p))) : 1/(rhoL*aL) * (p/rhoL) ^ (-(gamma + 1)/(2*gamma))
-    dfR(p) = p>pR ? sqrt(AR/(BR+p)) * (1.0 - (p-pR)/(2*(BR+p))) : 1/(rhoR*aR) * (p/rhoR) ^ (-(gamma + 1)/(2*gamma))
+    dfL(p) = p>pL ? sqrt(AL/(BL+p)) * (1.0 - (p-pL)/(2.0*(BL+p))) : 1.0/(rhoL*aL) * (p/pL) ^ (-(gamma + 1.0)/(2.0*gamma))
+    dfR(p) = p>pR ? sqrt(AR/(BR+p)) * (1.0 - (p-pR)/(2.0*(BR+p))) : 1.0/(rhoR*aR) * (p/pR) ^ (-(gamma + 1.0)/(2.0*gamma))
+
     df(p) = dfL(p) + dfR(p)
 
     # choose p0, the starting guess
@@ -40,7 +44,6 @@ function solve_riemann(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, aL::T, aR::
     pstar = find_zero((f, df), p0, Roots.Newton())
     # I could also write the newton solver as described in the book
 
-
     # compute u*
     ustar = 0.5*(uL+uR+fR(pstar)-fL(pstar)) 
     
@@ -51,7 +54,7 @@ function solve_riemann(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, aL::T, aR::
         # we are on the left of the contact wave
         if pstar>pL     # left shock wave
             SL = uL - aL* sqrt(((gamma+1.0)/(2*gamma) * pstar/pL + (gamma-1.0)/(2.0*gamma)))
-            if S < Sl
+            if S < SL
                 return WL
             else
                 rhostarL = rhoL * (pstar/pL + (gamma-1.0)/(gamma+1.0))/((gamma-1.0)/(gamma+1.0)* pstar/pL + 1.0)
@@ -94,9 +97,9 @@ function solve_riemann(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, aL::T, aR::
                 rhostarR = rhoR*(pstar/pR)^(1.0/gamma) 
                 return [rhostarR, ustar, pstar]
             else
-                rhoRfan(x,t) = rhoR * ((2.0/(gamma+1.0) - (gamma-1.0)/((gamma+1.0)*aR) * (uR - x/t))^(2.0/(gamma-1.0)) )
-                uRfan(x,t) = 2.0/(gamma+1.0) * (-aR + 0.5*(gamma-1.0)*uR + x/t)
-                pRfan(x,t) = pR * ((2.0/(gamma+1.0) - (gamma-1.0)/((gamma+1.0)*aR) * (uR - x/t))^(2.0*gamma/(gamma-1.0)))
+                rhoRfan = rhoR * ((2.0/(gamma+1.0) - (gamma-1.0)/((gamma+1.0)*aR) * (uR - S))^(2.0/(gamma-1.0)) )
+                uRfan = 2.0/(gamma+1.0) * (-aR + 0.5*(gamma-1.0)*uR + S)
+                pRfan = pR * ((2.0/(gamma+1.0) - (gamma-1.0)/((gamma+1.0)*aR) * (uR - S))^(2.0*gamma/(gamma-1.0)))
                 return [rhoRfan, uRfan, pRfan]
             end
         end
