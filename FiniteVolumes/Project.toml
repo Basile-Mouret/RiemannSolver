@@ -10,6 +10,7 @@ GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Observables = "510215fc-4207-5dde-b226-833fc4488ee2"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 
 [compat]
@@ -19,4 +20,5 @@ GeometryBasics = "0.5.10"
 LinearAlgebra = "1.12.0"
 Observables = "0.5.5"
 Revise = "3.14.5"
+Roots = "3.0.0"
 StableRNGs = "1.0.4"

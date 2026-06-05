@@ -1,0 +1,104 @@
+using Roots
+
+"""
+Exact Riemann Solver for the 1D Euler system
+"""
+function solve_riemann(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, aL::T, aR::T; TOL::T=1e-6) where {T<:Real}
+    rhoL, uL, pL = WL
+    rhoR, uR, pR = WR
+
+    # compute p* and u* using Newton
+    #   build f
+
+    AL = 2/((gamma+1)+rhoL)
+    BL = (gamma - 1) / ((gamma + 1) * pL)
+    AR = 2/((gamma+1)+rhoR)
+    BR = (gamma - 1) / ((gamma + 1) * pR)
+
+    fL(p) = p>pL ? (p-pL)*(sqrt(AL/(p+BL))) : ((2*aL)/(gamma-1)) * ((p/pL)^((gamma-1)/(2*gamma))-1)
+    fR(p) = p>pR ? (p-pR)*(sqrt(AR/(p+BR))) : ((2*aR)/(gamma-1)) * ((p/pR)^((gamma-1)/(2*gamma))-1)
+    f(p) = fL(p) + fR(p) + (uR - uL)
+
+    # build f'
+    dfL(p) = p>pL ? sqrt(AL/(BL+p)) * (1.0 - (p-pL)/(2*(BL+p))) : 1/(rhoL*aL) * (p/rhoL) ^ (-(gamma + 1)/(2*gamma))
+    dfR(p) = p>pR ? sqrt(AR/(BR+p)) * (1.0 - (p-pR)/(2*(BR+p))) : 1/(rhoR*aR) * (p/rhoR) ^ (-(gamma + 1)/(2*gamma))
+    df(p) = dfL(p) + dfR(p)
+
+    # choose p0, the starting guess
+    # from Toro, we choose the two shock approximation as it seemed to give the best results overall
+    pPV = 0.5 * (pL + pR) - 0.125 * (uR - uL) * (rhoL + rhoR) * (aL + aR)
+    phat = max(TOL, pPV)
+
+    gL = sqrt(AL / (phat + BL))
+    gR = sqrt(AR / (phat + BR))
+    pTS = (gL*pL + gR*pR - (uR-uL)) / (gL + gR)
+
+    p0 = max(TOL, pTS)
+    
+
+    # Newton's method to find p*
+    pstar = find_zero((f, df), p0, Roots.Newton())
+    # I could also write the newton solver as described in the book
+
+
+    # compute u*
+    ustar = 0.5*(uL+uR+fR(pstar)-fL(pstar)) 
+    
+
+
+    # find right case : 
+    if S < ustar
+        # we are on the left of the contact wave
+        if pstar>pL     # left shock wave
+            SL = uL - aL* sqrt(((gamma+1.0)/(2*gamma) * pstar/pL + (gamma-1.0)/(2.0*gamma)))
+            if S < Sl
+                return WL
+            else
+                rhostarL = rhoL * (pstar/pL + (gamma-1.0)/(gamma+1.0))/((gamma-1.0)/(gamma+1.0)* pstar/pL + 1.0)
+                return [rhostarL, ustar, pstar]
+            end
+
+        else            # left fan
+            SHL = uL - aL
+            astarL = aL*(pstar/pL)^((gamma-1.0)/(2.0*gamma))
+            STL = ustar - astarL
+            if S<SHL
+                return WL
+            elseif S>STL
+                rhostarL = rhoL*(pstar/pL)^(1.0/gamma) 
+                return [rhostarL, ustar, pstar]
+            else
+                rhoLfan = rhoL * ((2.0/(gamma+1.0) + (gamma-1.0)/((gamma+1.0)*aL) * (uL - S))^(2.0/(gamma-1.0)) )
+                uLfan = 2.0/(gamma+1.0) * (aL + 0.5*(gamma-1.0)*uL + S)
+                pLfan = pL * ((2.0/(gamma+1.0) + (gamma-1.0)/((gamma+1.0)*aL) * (uL - S))^(2.0*gamma/(gamma-1.0)))
+                return [rhoLfan, uLfan, pLfan]
+            end
+        end
+    else
+        # we are on the right of the contact wave
+        if pstar>pR     # right shock wave
+            SR = uR + aR* sqrt(((gamma+1.0)/(2*gamma) * pstar/pR + (gamma-1.0)/(2.0*gamma)))
+            if S>SR
+                return WR
+            else
+                rhostarR = rhoR * (pstar/pR + (gamma-1.0)/(gamma+1.0))/((gamma-1.0)/(gamma+1.0)* pstar/pR + 1.0)
+                return [rhostarR, ustar, pstar]
+            end
+        else            # left fan
+            SHR = uR + aR
+            astarR = aR*(pstar/pR)^((gamma-1.0)/(2.0*gamma))
+            STR = ustar + astarR
+            if S>SHR
+                return WR
+            elseif S<STR
+                rhostarR = rhoR*(pstar/pR)^(1.0/gamma) 
+                return [rhostarR, ustar, pstar]
+            else
+                rhoRfan(x,t) = rhoR * ((2.0/(gamma+1.0) - (gamma-1.0)/((gamma+1.0)*aR) * (uR - x/t))^(2.0/(gamma-1.0)) )
+                uRfan(x,t) = 2.0/(gamma+1.0) * (-aR + 0.5*(gamma-1.0)*uR + x/t)
+                pRfan(x,t) = pR * ((2.0/(gamma+1.0) - (gamma-1.0)/((gamma+1.0)*aR) * (uR - x/t))^(2.0*gamma/(gamma-1.0)))
+                return [rhoRfan, uRfan, pRfan]
+            end
+        end
+    end
+end
