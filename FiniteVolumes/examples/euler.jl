@@ -7,7 +7,7 @@ N = 1000 # You can bump this to 200 or 500 later for sharper resolution
 gamma = 1.4
 
 mesh = generate_1DMesh(x0, x1, N, false)
-eq = Euler1D(gamma) 
+eq = Euler1D(gamma, :exact) 
 bcs = Dict(:left => Outflow(), :right => Outflow())
 
 

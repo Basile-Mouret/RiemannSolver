@@ -3,7 +3,7 @@ using Roots
 """
 Exact Riemann Solver for the 1D Euler system
 """
-function solve_riemann(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
+function solve_riemann_exact(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
     rhoL, uL, pL = WL
     rhoR, uR, pR = WR
 
@@ -104,4 +104,22 @@ function solve_riemann(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL::T=1e
             end
         end
     end
+end
+
+"""
+Roe
+"""
+function solve_riemann_roe(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
+end
+
+"""
+HLL
+"""
+function solve_riemann_roe(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
+end
+
+"""
+HLLC
+"""
+function solve_riemann_roe(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
 end

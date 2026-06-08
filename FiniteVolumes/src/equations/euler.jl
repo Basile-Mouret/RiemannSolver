@@ -1,5 +1,6 @@
 struct Euler1D <: AbstractEquation1D
     gamma::Float64
+    solver::Symbol
 end
 
 function _cons_to_prim_euler_1D_ideal_gas(U::Vector{T}, gamma::T) where {T<:Real}
@@ -43,7 +44,11 @@ function flux(eq::Euler1D, UL::Vector{Float64}, UR::Vector{Float64})
     WR = _cons_to_prim_euler_1D_ideal_gas(UR, eq.gamma)
     
     # solve the Riemann problem at the interface (x/t = 0.0)
-    rho, u, p = solve_riemann(0.0, WL, WR, eq.gamma)
+    if eq.solver == :exact
+        rho, u, p = solve_riemann_exact(0.0, WL, WR, eq.gamma)
+    else
+        rho, u, ρ = 0.0, 0.0, 0.0
+    end
     
     # reconstruct the fluxesbased on the star state
     rhou = rho * u
