@@ -66,7 +66,7 @@ function animate_1D_solution(
         stairs!(ax_anim, xmid, obs_exact, step = :center, label = "Exact", linestyle = :dash)
     end
     axislegend(ax_anim)
-    record(fig_anim, filename, 1:length(U_hist), framerate = 15) do frame_idx
+    record(fig_anim, filename, 1:length(U_hist), framerate = 60) do frame_idx
         obs_numerical[] = U_hist[frame_idx]
         if !isnothing(U_exact_hist)
             obs_exact[] = U_exact_hist[frame_idx]
