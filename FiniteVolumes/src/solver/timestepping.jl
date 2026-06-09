@@ -5,14 +5,13 @@ function explicit_euler_step!(
     eq::AbstractEquation1D,
     bcs,
     dt::Float64,
-    dx::Float64,
     t::Float64
 )
     nvars = num_vars(eq)
 
     # get the values for the left and right cells
     # if it is a border, use the ghost cells
-    for (CL, CR) in mesh.Faces
+    for (CL, CR) in mesh.faces_cells
         if CL != 0 && CR != 0
             uL = values[CL, :]
             uR = values[CR, :]
@@ -25,17 +24,18 @@ function explicit_euler_step!(
         end
 
         # compute the flux for the given equation
+        # we should add normal for flux calculations (1 for 1D and face.normal for 2D/3D)
         F = flux(eq, uL, uR)
 
         # apply fluxes to non ghost cells
         if CL != 0
             for v in 1:nvars
-                new_values[CL, v] -= (dt / dx) * F[v]
+                new_values[CL, v] -= (dt / mesh.cells_length[CL]) * F[v]
             end
         end
         if CR != 0
             for v in 1:nvars
-                new_values[CR, v] += (dt / dx) * F[v]
+                new_values[CR, v] += (dt / mesh.cells_length[CR]) * F[v]
             end
         end
     end

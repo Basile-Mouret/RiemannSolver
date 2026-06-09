@@ -11,15 +11,13 @@ function solve(
     CFL::Float64 = 0.9,
     compute_exact::Bool = false
 )
-    xmid = cell_centers(mesh)
-    dx = cell_width(mesh)
-    x0, x1 = mesh.x[1], mesh.x[end]
+    x0, x1 = mesh.points[1], mesh.points[end]
     nvars = num_vars(eq)
 
-    N = length(mesh.x) - 1
+    N = length(mesh.points) - 1
     values = Matrix{Float64}(undef, N, nvars)
     for i in 1:N
-        values[i, :] .= ic(xmid[i])
+        values[i, :] .= ic(mesh.cells_center[i])
     end
     new_values = copy(values)
 
@@ -30,14 +28,14 @@ function solve(
     step = 0
     t = 0.0
     while t < final_time && step < max_time_steps
-        dt = CFL * dx / max_wave_speed(eq, values, mesh)
+        dt = CFL * mesh.cells_length[1] / max_wave_speed(eq, values, mesh) # to generalize with a helper function for unregular grids (compute cfl)
         if t + dt > final_time
             dt = final_time - t
         end
 
         new_values .= values
 
-        explicit_euler_step!(new_values, values, mesh, eq, bcs, dt, dx, t)
+        explicit_euler_step!(new_values, values, mesh, eq, bcs, dt, t)
         values .= new_values
         t += dt
         step += 1
@@ -47,12 +45,13 @@ function solve(
 
         if compute_exact
             exact = zeros(N, nvars)
-            exact_solution!(exact, eq, xmid, ic, bcs, x0, x1, t)
+            exact_solution!(exact, eq, mesh.cells_center, ic, bcs, x0, x1, t)
             push!(U_exact_hist, copy(exact))
         else
             push!(U_exact_hist, copy(values))
         end
     end
 
-    return xmid, U_history, U_exact_hist, [0.0; dt_hist]
+    return U_history, U_exact_hist, [0.0; dt_hist]
 end
+

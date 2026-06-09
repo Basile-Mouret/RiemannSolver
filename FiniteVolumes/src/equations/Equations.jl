@@ -1,3 +1,4 @@
+# 1D
 abstract type AbstractEquation1D end
 
 num_vars(::AbstractEquation1D)::Int = error("num_vars not implemented")
@@ -11,4 +12,12 @@ function exact_solution!(utrue::Matrix{Float64}, eq::AbstractEquation1D, xmid::V
                          ic::Function, bcs::Dict, x0::Float64, x1::Float64, t::Float64)
     error("exact_solution! not implemented for $(typeof(eq))")
 end
+
+# 2D
+abstract type AbstractEquation2D end
+
+num_vars(::AbstractEquation2D)::Int = error("num_vars not implemented")
+max_wave_speed(::AbstractEquation2D, values::Matrix{Float64}, Mesh::Mesh1D)::Float64 = error("max_wave_speed not implemented")
+
+compute_cfl(eq::AbstractEquation2D, CFL::Float64, dx::Float64)::Float64 = error("compute_cfl not implemented for $(typeof(eq))")
 

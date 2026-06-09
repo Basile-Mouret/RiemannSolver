@@ -20,3 +20,17 @@ function apply_ghost(bc::Dirichlet, u_interior::Vector{Float64}, t::Float64)
     return [bc.value(t)]
 end
 
+abstract type AbstractBC2D end
+
+struct Dirichlet2D <: AbstractBC2D
+    value::Function
+end
+
+struct Reflecting2D <: AbstractBC2D end
+
+struct Outflow2D <: AbstractBC2D end
+
+function apply_ghost(bc::AbstractBC2D, u_interior::Vector{Float64}, t::Float64)::Vector{Float64}
+    error("apply_ghost not implemented for $(typeof(bc))")
+end
+

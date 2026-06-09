@@ -30,29 +30,29 @@ function ic(x)
     return [rho, rhou, E]
 end
 
-xmid = cell_centers(mesh)
-
 max_time_steps = 1000
 final_time = 0.012
 CFL = 0.9
 
-xmid, U_hist, U_exact_hist, dt_hist = solve(mesh, eq, bcs, ic; 
-                                            max_time_steps = max_time_steps, 
-                                            CFL = CFL, 
-                                            final_time = final_time)
+U_hist, U_exact_hist, dt_hist = solve(mesh, eq, bcs, ic;
+                                      max_time_steps = max_time_steps,
+                                      CFL = CFL,
+                                      final_time = final_time)
+
+xmid = mesh.cells_center
 
 rho_hist = [mat[:, 1] for mat in U_hist]
-u_hist = [mat[:, 2]./mat[:,1] for mat in U_hist] 
-p_hist = [(gamma - 1.0) .* (mat[:,3] .- 0.5 .* mat[:,2].^2 ./ mat[:, 1]) for mat in U_hist] 
+u_hist = [mat[:, 2]./mat[:,1] for mat in U_hist]
+p_hist = [(gamma - 1.0) .* (mat[:,3] .- 0.5 .* mat[:,2].^2 ./ mat[:, 1]) for mat in U_hist]
 e_hist = [mat[:,3]./mat[:,1] .- 0.5 .* (mat[:,2]./mat[:,1]).^2 for mat in U_hist]
 
 folder = "media/euler1D/example5_godunov/"
 mkpath(folder)
 
-animate_1D_solution(xmid, rho_hist, folder*"rho.mp4"; dt_hist = dt_hist)
-animate_1D_solution(xmid, u_hist, folder*"u.mp4"; dt_hist = dt_hist)
-animate_1D_solution(xmid, p_hist, folder*"p.mp4"; dt_hist = dt_hist)
-animate_1D_solution(xmid, e_hist, folder*"e.mp4"; dt_hist = dt_hist)
+animate_cell_values(mesh, rho_hist, folder*"rho.mp4"; dt_hist = dt_hist)
+animate_cell_values(mesh, u_hist, folder*"u.mp4"; dt_hist = dt_hist)
+animate_cell_values(mesh, p_hist, folder*"p.mp4"; dt_hist = dt_hist)
+animate_cell_values(mesh, e_hist, folder*"e.mp4"; dt_hist = dt_hist)
 
 fig = Figure(size = (1000, 1000))
 
