@@ -11,10 +11,14 @@ eq = Euler1D(gamma, :exact)
 bcs = Dict(:left => Outflow(), :right => Outflow())
 
 
-# Initial Conditions (Left state for x <= 0.5, Right state for x > 0.5)
-rho0(x) = x <= 0.5 ? 1.0 : 1.0
-u0(x)   = x <= 0.5 ? -2.0 : 2.0
-p0(x)   = x <= 0.5 ? 0.4 : 0.4 
+rhoL, uL, pL, rhoR, uR, pR = 1.0, 0.75, 1.0, 0.125, 0.0, 0.1
+
+xm = 0.3
+
+# Initial Conditions
+rho0(x) = x <= xm ? rhoL : rhoR 
+u0(x)   = x <= xm ? uL : uR
+p0(x)   = x <= xm ? pL : pR 
 
 function ic(x)
     rho = rho0(x)
@@ -30,8 +34,8 @@ end
 xmid = cell_centers(mesh)
 
 max_time_steps = 1000
-final_time = 0.15
-CFL = 0.8
+final_time = 0.2
+CFL = 0.9
 
 xmid, U_hist, U_exact_hist, dt_hist = solve(mesh, eq, bcs, ic; 
                                             max_time_steps = max_time_steps, 
@@ -43,7 +47,8 @@ u_hist = [mat[:, 2]./mat[:,1] for mat in U_hist]
 p_hist = [(gamma - 1.0) .* (mat[:,3] .- 0.5 .* mat[:,2].^2 ./ mat[:, 1]) for mat in U_hist] 
 e_hist = [mat[:,3]./mat[:,1] .- 0.5 .* (mat[:,2]./mat[:,1]).^2 for mat in U_hist]
 
-folder = "media/euler1D/ex2/"
+folder = "media/euler1D/example1_godunov/"
+mkpath(folder)
 
 animate_1D_solution(xmid, rho_hist, folder*"rho.mp4"; dt_hist = dt_hist)
 animate_1D_solution(xmid, u_hist, folder*"u.mp4"; dt_hist = dt_hist)
