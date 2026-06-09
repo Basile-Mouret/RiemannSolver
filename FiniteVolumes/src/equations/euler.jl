@@ -47,7 +47,7 @@ function flux(eq::Euler1D, UL::Vector{Float64}, UR::Vector{Float64})
     if eq.solver == :exact
         rho, u, p = solve_riemann_exact(0.0, WL, WR, eq.gamma)
     else
-        rho, u, ρ = 0.0, 0.0, 0.0
+        rho, u, p = 0.0, 0.0, 0.0
     end
     
     # reconstruct the fluxesbased on the star state
@@ -57,3 +57,7 @@ function flux(eq::Euler1D, UL::Vector{Float64}, UR::Vector{Float64})
     return [rhou, rhou * u + p, u * (E + p)]
 end
 
+function compute_dt(mesh::Mesh1D, eq::Euler1D, values::Matrix{Float64}, CFL::Float64)::Float64
+    dx = minimum(mesh.cells_center)
+    return CFL * dx / max_wave_speed(eq, values, mesh)
+end

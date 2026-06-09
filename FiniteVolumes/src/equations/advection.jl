@@ -7,8 +7,6 @@ Advection1D(; c::Float64, flux_type::Symbol = :upwind) = Advection1D(c, flux_typ
 
 num_vars(::Advection1D) = 1
 
-max_wave_speed(eq::Advection1D, ::Matrix{Float64}, ::Mesh1D ) = abs(eq.c) 
-
 function flux(eq::Advection1D, uL::Vector{Float64}, uR::Vector{Float64})
     if eq.flux_type == :upwind
         F = eq.c > 0 ? eq.c * uL[1] : eq.c * uR[1]
@@ -57,3 +55,9 @@ function exact_solution!(utrue::Matrix{Float64}, eq::Advection1D, xmid::Vector{F
         end
     end
 end
+
+function compute_dt(mesh::Mesh1D, eq::Advection1D, values::Matrix{Float64}, CFL::Float64)::Float64
+    dx = minimum(mesh.cells_center)
+    return CFL * dx / abs(eq.c)
+end
+

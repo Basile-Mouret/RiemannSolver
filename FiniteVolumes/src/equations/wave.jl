@@ -5,8 +5,6 @@ end
 
 num_vars(::Wave1D) = 2
 
-max_wave_speed(eq::Wave1D, values::Matrix{Float64}, Mesh::Mesh1D ) = sqrt(eq.kappa / eq.rho)
-
 function flux(eq::Wave1D, uL::Vector{Float64}, uR::Vector{Float64})
     pl, ul = uL[1], uL[2]
     pr, ur = uR[1], uR[2]
@@ -44,3 +42,9 @@ function entropy(eq::Wave1D, cell_values::Matrix{Float64}, dx::Float64)
     u_sq = sum(cell_values[:, 2] .^ 2)
     return 0.5 * dx * (p_sq + u_sq / (eq.rho * eq.kappa))
 end
+
+function compute_dt(mesh::Mesh1D, eq::Wave1D, values::Matrix{Float64}, CFL::Float64)::Float64
+    dx = minimum(mesh.cells_center)
+    return CFL * dx / sqrt(eq.kappa / eq.rho)
+end
+

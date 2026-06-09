@@ -35,7 +35,7 @@ max_time_steps = 1000
 final_time = 0.2
 CFL = 0.9
 
-U_hist, U_exact_hist, dt_hist = solve(mesh, eq, bcs, ic;
+U_hist, dt_hist = solve(mesh, eq, bcs, ic;
                                       max_time_steps = max_time_steps,
                                       CFL = CFL,
                                       final_time = final_time)
