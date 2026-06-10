@@ -2,8 +2,8 @@
 Interface to solve a hyperbolic problem using finite volumes
 """
 function solve(
-    mesh::Mesh1D,
-    eq::AbstractEquation1D,
+    mesh::AbstractMesh,
+    eq::AbstractEquation,
     bcs,
     ic::Function;
     max_time_steps::Int,
@@ -12,10 +12,10 @@ function solve(
 )
     nvars = num_vars(eq)
 
-    N = length(mesh.points) - 1
+    N = length(mesh.cells)
     values = Matrix{Float64}(undef, N, nvars)
     for i in 1:N
-        values[i, :] .= ic(mesh.cells_center[i])
+        values[i, :] .= ic(mesh.cell_centers[i])
     end
     new_values = copy(values)
 

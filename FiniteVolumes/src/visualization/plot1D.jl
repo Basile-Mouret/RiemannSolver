@@ -6,9 +6,9 @@ Plot 1D cell values, add true solution if available
 function plot_cell_values(mesh::Mesh1D, u::Vector{Float64}; u_exact = nothing, title::String = "Finite Volume Plot")
     fig = Figure(size = (800, 500))
     ax = Axis(fig[1, 1], title = title, xlabel = "x", ylabel = "U")
-    stairs!(ax, mesh.cells_center, u, step = :center, label = "Numerical", linewidth = 2)
+    stairs!(ax, mesh.cell_centers, u, step = :center, label = "Numerical", linewidth = 2)
     if !isnothing(u_exact)
-        stairs!(ax, mesh.cells_center, u_exact, step = :center, label = "Exact", linestyle = :dash, linewidth = 2)
+        stairs!(ax, mesh.cell_centers, u_exact, step = :center, label = "Exact", linestyle = :dash, linewidth = 2)
     end
     axislegend(ax)
     return fig
@@ -33,10 +33,10 @@ function animate_cell_values(
     fig_anim = Figure(size = (800, 500))
     ax_anim = Axis(fig_anim[1, 1])
     obs_numerical = Observable(U_hist[1])
-    stairs!(ax_anim, mesh.cells_center, obs_numerical, step = :center, label = "Numerical")
+    stairs!(ax_anim, mesh.cell_centers, obs_numerical, step = :center, label = "Numerical")
     if !isnothing(U_exact_hist)
         obs_exact = Observable(U_exact_hist[1])
-        stairs!(ax_anim,  mesh.cells_center, obs_exact, step = :center, label = "Exact", linestyle = :dash)
+        stairs!(ax_anim,  mesh.cell_centers, obs_exact, step = :center, label = "Exact", linestyle = :dash)
     end
     axislegend(ax_anim)
     record(fig_anim, filename, 1:length(U_hist), framerate = 60) do frame_idx

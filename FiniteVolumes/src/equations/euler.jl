@@ -23,7 +23,7 @@ end
 
 num_vars(::Euler1D) = 3
 
-function max_wave_speed(eq::Euler1D, U::Matrix{Float64}, Mesh::Mesh1D )
+function max_wave_speed(::Mesh1D, eq::Euler1D, U::Matrix{Float64})
 s_max = 0.0
     
     for i in axes(U, 1)
@@ -58,6 +58,6 @@ function flux(eq::Euler1D, UL::Vector{Float64}, UR::Vector{Float64})
 end
 
 function compute_dt(mesh::Mesh1D, eq::Euler1D, values::Matrix{Float64}, CFL::Float64)::Float64
-    dx = minimum(mesh.cells_center)
-    return CFL * dx / max_wave_speed(eq, values, mesh)
+    dx = minimum(mesh.cell_measure)
+    return CFL * dx / max_wave_speed(mesh, eq, values)
 end

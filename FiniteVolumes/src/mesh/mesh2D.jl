@@ -6,8 +6,8 @@ import Gmsh: gmsh
 Fields
 - `points`        : vertex coordinates
 - `cells`         : vertex indices per cell (3 nodes for triangles, 4 for quads)
-- `cells_center`  : cell barycenters
-- `cells_area`    : cell areas
+- `cell_centers`  : cell barycenters
+- `cell_measure`  : cell areas
 - `faces`         : vertex index pair (a, b) per face
 - `face_cells`    : (left, right) cell indices; 0 means exterior (boundary side)
 - `face_normals`  : unit outward normal from the left cell at each face
@@ -15,11 +15,11 @@ Fields
 - `boundary_faces`: indices into `faces` where right cell == 0
 - `boundary_tags` : physical group name → face indices (empty if no physical groups)
 """
-struct Mesh2D
+struct Mesh2D <: AbstractMesh
     points         :: Vector{NTuple{2, Float64}}
     cells          :: Vector{Vector{Int}}
-    cells_center   :: Vector{NTuple{2, Float64}}
-    cells_area     :: Vector{Float64}
+    cell_centers   :: Vector{NTuple{2, Float64}}
+    cell_measure   :: Vector{Float64}
     faces          :: Vector{NTuple{2, Int}}
     face_cells     :: Vector{NTuple{2, Int}}
     face_normals   :: Vector{NTuple{2, Float64}}
@@ -76,13 +76,13 @@ function load_mesh2D(filename::String) :: Mesh2D
     n_cells = length(cells)
 
     # Cell geometry
-    cells_center = Vector{NTuple{2, Float64}}(undef, n_cells)
-    cells_area   = Vector{Float64}(undef, n_cells)
+    cell_centers = Vector{NTuple{2, Float64}}(undef, n_cells)
+    cell_measure = Vector{Float64}(undef, n_cells)
     for (c, verts) in enumerate(cells)
         pts = [points[v] for v in verts]
         n = length(pts)
-        cells_center[c] = (sum(p[1] for p in pts) / n, sum(p[2] for p in pts) / n)
-        cells_area[c]   = _polygon_area(pts)
+        cell_centers[c] = (sum(p[1] for p in pts) / n, sum(p[2] for p in pts) / n)
+        cell_measure[c] = _polygon_area(pts)
     end
 
     # Face connectivity
@@ -124,7 +124,7 @@ function load_mesh2D(filename::String) :: Mesh2D
         len    = sqrt(dx^2 + dy^2)
         nx, ny = -dy / len, dx / len
         mx, my = (pa[1] + pb[1]) / 2, (pa[2] + pb[2]) / 2
-        cl = cells_center[L]
+        cl = cell_centers[L]
         # flip if normal points toward L instead of away from it
         if (cl[1] - mx) * nx + (cl[2] - my) * ny > 0
             nx, ny = -nx, -ny
@@ -159,7 +159,7 @@ function load_mesh2D(filename::String) :: Mesh2D
     gmsh.finalize()
 
     return Mesh2D(
-        points, cells, cells_center, cells_area,
+        points, cells, cell_centers, cell_measure,
         faces, face_cells_vec, face_normals, face_lengths,
         boundary_faces, boundary_tags
     )

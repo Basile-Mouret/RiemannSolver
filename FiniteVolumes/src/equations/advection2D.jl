@@ -1,8 +1,6 @@
-struct Advection2D <: AbstractEquation1D
+struct Advection2D <: AbstractEquation2D
     c::NTuple{2, Float64}
 end
-
-Advection2D(; c::Float64) = Advection1D(c)
 
 num_vars(::Advection2D) = 2
 

@@ -44,7 +44,7 @@ function entropy(eq::Wave1D, cell_values::Matrix{Float64}, dx::Float64)
 end
 
 function compute_dt(mesh::Mesh1D, eq::Wave1D, values::Matrix{Float64}, CFL::Float64)::Float64
-    dx = minimum(mesh.cells_center)
+    dx = minimum(mesh.cell_measure)
     return CFL * dx / sqrt(eq.kappa / eq.rho)
 end
 

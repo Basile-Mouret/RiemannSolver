@@ -9,7 +9,7 @@ c = sqrt(kappa / rho)
 
 mesh = generate_1DMesh(x0, x1, N, false)
 eq = Wave1D(kappa, rho)
-bcs = Dict(:left => Reflecting(), :right => Outflow())
+bcs = Dict("left" => Reflecting(), "right" => Outflow())
 
 p0(x) = 0.2 < x < 0.4 ? 100 * exp(0.1 / ((x - 0.2) * (x - 0.4))) : 0.0
 p0(x) = sin(2*pi*x)
@@ -18,7 +18,7 @@ u0_func(x) = 0.0
 ic(x) = [p0(x), u0_func(x)]
 
 
-xmid = mesh.cells_center
+xmid = mesh.cell_centers
 display(plot_cell_values(mesh, p0.(xmid); title = "Initial condition (p)"))
 display(plot_cell_values(mesh, u0_func.(xmid); title = "Initial condition (u)"))
 

@@ -8,7 +8,7 @@ gamma = 1.4
 
 mesh = generate_1DMesh(x0, x1, N, false)
 eq = Euler1D(gamma, :exact) 
-bcs = Dict(:left => Outflow(), :right => Outflow())
+bcs = Dict("left" => Outflow(), "right" => Outflow())
 
 
 rhoL, uL, pL, rhoR, uR, pR = 1.0, -19.59745, 1000.0, 1.0, -19.59745, 0.01
@@ -34,12 +34,12 @@ max_time_steps = 1000
 final_time = 0.012
 CFL = 0.9
 
-U_hist, U_exact_hist, dt_hist = solve(mesh, eq, bcs, ic;
+U_hist, dt_hist = solve(mesh, eq, bcs, ic;
                                       max_time_steps = max_time_steps,
                                       CFL = CFL,
                                       final_time = final_time)
 
-xmid = mesh.cells_center
+xmid = mesh.cell_centers
 
 rho_hist = [mat[:, 1] for mat in U_hist]
 u_hist = [mat[:, 2]./mat[:,1] for mat in U_hist]

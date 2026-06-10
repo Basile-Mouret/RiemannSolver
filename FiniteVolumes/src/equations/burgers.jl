@@ -24,5 +24,5 @@ function flux(::Burgers1D, Ul::Vector{Float64}, Ur::Vector{Float64})
 end
 
 function compute_dt(mesh::Mesh1D, eq::Burgers1D, values::Matrix{Float64}, CFL::Float64)::Float64
-    return minimum(CFL .* mesh.cells_length ./ abs.(values))
+    return minimum(CFL .* mesh.cell_measure ./ abs.(values))
 end

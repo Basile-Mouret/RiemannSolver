@@ -57,7 +57,7 @@ function exact_solution!(utrue::Matrix{Float64}, eq::Advection1D, xmid::Vector{F
 end
 
 function compute_dt(mesh::Mesh1D, eq::Advection1D, values::Matrix{Float64}, CFL::Float64)::Float64
-    dx = minimum(mesh.cells_center)
+    dx = minimum(mesh.cell_measure)
     return CFL * dx / abs(eq.c)
 end
 
