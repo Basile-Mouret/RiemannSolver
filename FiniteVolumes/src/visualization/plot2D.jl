@@ -1,3 +1,4 @@
+using CairoMakie, GeometryBasics
 
 function show_heatmap(mesh::Mesh2D, cellValues::Vector{Float64}, title::String)
     fig = Figure(fontsize=18, size=(600, 600))
