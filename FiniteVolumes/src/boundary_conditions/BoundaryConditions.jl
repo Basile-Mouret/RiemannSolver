@@ -13,7 +13,7 @@ struct Dirichlet <: AbstractBC1D
 end
 
 function apply_ghost(bc::Dirichlet, u_interior::Vector{Float64}, t::Float64)
-    return [bc.value(t)]
+    return bc.value(t)
 end
 
 struct Outflow <: AbstractBC1D end

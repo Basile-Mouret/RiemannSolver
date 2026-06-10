@@ -47,7 +47,7 @@ function animate_cell_values(
         if !isnothing(dt_hist) && !isnothing(t_hist)
             t_val = t_hist[frame_idx]
             dt_val = dt_hist[frame_idx]
-            title_str = "t = $(round(t_val, digits=4))  |  dt = $(round(dt_val, sigdigits=3))  |  step $(frame_idx)"
+            title_str = "step $(frame_idx)  |  dt = $(round(dt_val, sigdigits=3))  |  t = $(round(t_val, digits=4))"
         else
             title_str = "Time Step: $(frame_idx - 1)"
         end

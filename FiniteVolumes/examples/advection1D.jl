@@ -5,7 +5,11 @@ N = 100
 
 mesh = generate_1DMesh(x0, x1, N, false)
 eq = Advection1D(c = 1.5, flux_type = :upwind)
-bcs = Dict("left" => Dirichlet(t -> sin(4 * π * t)), "right" => Outflow())
+boundary_conditions = Dict(
+                           "left" => Dirichlet(t->[sin(4*π*t)]),
+                           "right" => Outflow()
+                          )
+
 u0(x) = [0.0]
 
 max_time_steps = 100

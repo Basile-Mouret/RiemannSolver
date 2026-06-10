@@ -19,7 +19,7 @@ end
 
 function compute_dt(mesh::Mesh2D, eq::Advection2D, values::Matrix{Float64}, CFL::Float64)::Float64
     # this is wrong but I want to see if it runs before fixing
-    return CFL * minimum(mesh.cell_measure) / abs(maximum(eq.c))
+    return CFL * minimum(mesh.cell_measure) / maximum(abs.(eq.c))
 end
 
 
