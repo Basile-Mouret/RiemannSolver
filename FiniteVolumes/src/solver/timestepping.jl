@@ -31,14 +31,14 @@ function explicit_euler_step!(
             (CL, CR) = mesh.face_cells[face_id]
             if CL==0
                 uR = cell_values[CR, :]
-                uL = apply_ghost(bcs[tag], uR, t)
+                uL = apply_ghost(bcs[tag], uR, mesh.face_centers[face_id], t)
                 F = flux(eq, uL, uR, mesh.face_normals[face_id])
                 for v in 1:nvars
                     new_values[CR, v] += (dt / mesh.cell_measure[CR]) * F[v]
                 end
             else
                 uL = cell_values[CL, :]
-                uR = apply_ghost(bcs[tag], uL, t)
+                uR = apply_ghost(bcs[tag], uL, mesh.face_centers[face_id], t)
                 F = flux(eq, uL, uR, mesh.face_normals[face_id])
                 for v in 1:nvars
                     new_values[CL, v] -= (dt / mesh.cell_measure[CL]) * F[v]

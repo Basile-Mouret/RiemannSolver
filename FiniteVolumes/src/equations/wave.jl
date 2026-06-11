@@ -14,7 +14,7 @@ function flux(eq::Wave1D, uL::Vector{Float64}, uR::Vector{Float64})
     return [Fp, Fu]
 end
 
-function apply_ghost(bc::Reflecting, u_interior::Vector{Float64}, ::Float64)
+function apply_ghost(bc::Reflecting, u_interior::Vector{Float64}, x, ::Float64)
     return [u_interior[1], -u_interior[2]]
 end
 
