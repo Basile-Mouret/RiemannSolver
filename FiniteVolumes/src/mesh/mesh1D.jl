@@ -8,8 +8,9 @@ struct Mesh1D <: AbstractMesh
     cell_measure   :: Vector{Float64}
     faces          :: Vector{Int}
     face_centers   :: Vector{Float64}
+    face_lengths   :: Vector{Float64}
     face_cells     :: Vector{NTuple{2, Int}}
-    face_normals  :: Vector{Vector{Float64}}
+    face_normals   :: Vector{Vector{Float64}}
     boundary_faces :: Vector{Int}
     boundary_tags  :: Dict{String, Vector{Int}}
 end
@@ -38,10 +39,11 @@ function generate_1DMesh(x0::Float64, x1::Float64, N::Int, periodic::Bool)::Mesh
     end
 
     face_centers = points[faces]
+    face_lengths = ones(Float64, length(faces))
 
     return Mesh1D(
         points, cells, cell_centers, cell_measure,
-        faces, face_centers, face_cells, face_normals,
+        faces, face_centers, face_lengths, face_cells, face_normals,
         boundary_faces, boundary_tags
     )
 end
