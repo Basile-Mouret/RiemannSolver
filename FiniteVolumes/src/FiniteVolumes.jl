@@ -36,7 +36,7 @@ export AbstractBC1D, Dirichlet, Reflecting
 export AbstractBC2D, Dirichlet2D, Reflecting2D
 export explicit_euler_step!
 export solve
-export plot_cell_values, animate_cell_values
+export plot_cell_values, animate_cell_values, save_animation
 export show_heatmap
 
 end

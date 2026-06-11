@@ -49,10 +49,10 @@ e_hist = [mat[:,3]./mat[:,1] .- 0.5 .* (mat[:,2]./mat[:,1]).^2 for mat in U_hist
 folder = "media/euler1D/example4_godunov/"
 mkpath(folder)
 
-animate_cell_values(mesh, rho_hist, folder*"rho.mp4"; dt_hist = dt_hist)
-animate_cell_values(mesh, u_hist, folder*"u.mp4"; dt_hist = dt_hist)
-animate_cell_values(mesh, p_hist, folder*"p.mp4"; dt_hist = dt_hist)
-animate_cell_values(mesh, e_hist, folder*"e.mp4"; dt_hist = dt_hist)
+animate_cell_values(mesh, rho_hist; dt_hist = dt_hist)
+animate_cell_values(mesh, u_hist; dt_hist = dt_hist)
+animate_cell_values(mesh, p_hist; dt_hist = dt_hist)
+animate_cell_values(mesh, e_hist; dt_hist = dt_hist)
 
 fig = Figure(size = (1000, 1000))
 

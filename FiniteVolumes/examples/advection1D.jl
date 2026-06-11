@@ -22,8 +22,6 @@ xmid = mesh.cell_centers
 u0_vals = [u0(x)[1] for x in xmid]
 display(plot_cell_values(mesh, u0_vals; title = "Initial condition"))
 
-anim_file = "media/advection_1d.mp4"
 U_scalar = [mat[:, 1] for mat in U_hist]
-animate_cell_values(mesh, U_scalar, anim_file; dt_hist = dt_hist)
+animate_cell_values(mesh, U_scalar; dt_hist = dt_hist)
 
-run(`xdg-open $(anim_file)`)

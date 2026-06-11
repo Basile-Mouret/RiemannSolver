@@ -39,8 +39,6 @@ u_hist = [mat[:, 2] for mat in U_hist]
 #display(plot_cell_values(mesh, v0.(xmid); title = "Initial values for a characteristic variable"))
 #display(plot(entropy_hist))
 
-animate_cell_values(mesh, u_hist, "media/wave_u_1d.mp4"; dt_hist = dt_hist)
-animate_cell_values(mesh, p_hist, "media/wave_p_1d.mp4"; dt_hist = dt_hist)
+animate_cell_values(mesh, u_hist; dt_hist = dt_hist)
+animate_cell_values(mesh, p_hist; dt_hist = dt_hist)
 
-run(`xdg-open media/wave_u_1d.mp4`)
-run(`xdg-open media/wave_p_1d.mp4`)

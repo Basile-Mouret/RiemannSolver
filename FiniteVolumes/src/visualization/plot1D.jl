@@ -1,4 +1,6 @@
-using CairoMakie
+using GLMakie
+import CairoMakie
+GLMakie.activate!()
 
 """
 Plot 1D cell values, add true solution if available
@@ -15,43 +17,89 @@ function plot_cell_values(mesh::Mesh1D, u::Vector{Float64}; u_exact = nothing, t
 end
 
 """
-animates a time dependent problem on a 1D Mesh
+Interactive animation of a time dependent problem on a 1D mesh
 """
 function animate_cell_values(
+    mesh::Mesh1D,
+    U_hist::Vector{Vector{Float64}};
+    U_exact_hist = nothing,
+    dt_hist = nothing
+)
+    t_hist = !isnothing(dt_hist) && length(dt_hist) == length(U_hist) ? cumsum(dt_hist) : nothing
+
+    fig = Figure(size = (700, 750))
+    ax  = Axis(fig[1, 1], xlabel = "x", ylabel = "U", aspect = AxisAspect(1))
+    sl  = Slider(fig[2, 1], range = 1:length(U_hist), startvalue = 1)
+
+    obs_numerical = @lift(U_hist[$(sl.value)])
+    stairs!(ax, mesh.cell_centers, obs_numerical, step = :center, label = "Numerical")
+
+    if !isnothing(U_exact_hist)
+        obs_exact = @lift(U_exact_hist[$(sl.value)])
+        stairs!(ax, mesh.cell_centers, obs_exact, step = :center, label = "Exact", linestyle = :dash)
+    end
+    axislegend(ax)
+
+    on(sl.value) do idx
+        if !isnothing(t_hist)
+            ax.title = "step $idx  |  dt = $(round(dt_hist[idx], sigdigits=3))  |  t = $(round(t_hist[idx], digits=4))"
+        else
+            ax.title = "Time Step: $(idx - 1)"
+        end
+    end
+
+    mesh_visible = Observable(false)
+    vlines!(ax, mesh.face_centers, color = :black, linewidth = 0.5, visible = mesh_visible)
+
+    on(events(fig).keyboardbutton) do event
+        if event.action == Keyboard.press && event.key == Keyboard.m
+            mesh_visible[] = !mesh_visible[]
+        end
+    end
+
+    GLMakie.activate!()
+    screen = display(fig)
+    @async for i in 1:length(U_hist)
+        sl.value[] = i
+        sleep(1/60)
+    end
+    wait(screen)
+    return fig
+end
+
+"""
+Save a 1D animation to a video file using CairoMakie
+"""
+function save_animation(
     mesh::Mesh1D,
     U_hist::Vector{Vector{Float64}},
     filename::String;
     U_exact_hist = nothing,
-    dt_hist = nothing
+    dt_hist = nothing,
+    framerate::Int = 60
 )
-    if !isnothing(dt_hist) && length(dt_hist) == length(U_hist)
-        t_hist = cumsum(dt_hist)
-    else
-        t_hist = nothing
-    end
+    t_hist = !isnothing(dt_hist) && length(dt_hist) == length(U_hist) ? cumsum(dt_hist) : nothing
 
-    fig_anim = Figure(size = (800, 500))
-    ax_anim = Axis(fig_anim[1, 1])
-    obs_numerical = Observable(U_hist[1])
-    stairs!(ax_anim, mesh.cell_centers, obs_numerical, step = :center, label = "Numerical")
+    CairoMakie.activate!()
+
+    fig = Figure(size = (800, 500))
+    ax  = Axis(fig[1, 1], xlabel = "x", ylabel = "U")
+    obs = Observable(U_hist[1])
+    stairs!(ax, mesh.cell_centers, obs, step = :center, label = "Numerical")
     if !isnothing(U_exact_hist)
         obs_exact = Observable(U_exact_hist[1])
-        stairs!(ax_anim,  mesh.cell_centers, obs_exact, step = :center, label = "Exact", linestyle = :dash)
+        stairs!(ax, mesh.cell_centers, obs_exact, step = :center, label = "Exact", linestyle = :dash)
     end
-    axislegend(ax_anim)
-    record(fig_anim, filename, 1:length(U_hist), framerate = 60) do frame_idx
-        obs_numerical[] = U_hist[frame_idx]
-        if !isnothing(U_exact_hist)
-            obs_exact[] = U_exact_hist[frame_idx]
-        end
-        if !isnothing(dt_hist) && !isnothing(t_hist)
-            t_val = t_hist[frame_idx]
-            dt_val = dt_hist[frame_idx]
-            title_str = "step $(frame_idx)  |  dt = $(round(dt_val, sigdigits=3))  |  t = $(round(t_val, digits=4))"
-        else
-            title_str = "Time Step: $(frame_idx - 1)"
-        end
-        ax_anim.title = title_str
+    axislegend(ax)
+
+    record(fig, filename, 1:length(U_hist); framerate) do idx
+        obs[] = U_hist[idx]
+        !isnothing(U_exact_hist) && (obs_exact[] = U_exact_hist[idx])
+        ax.title = !isnothing(t_hist) ?
+            "step $idx  |  dt = $(round(dt_hist[idx], sigdigits=3))  |  t = $(round(t_hist[idx], digits=4))" :
+            "Time Step: $(idx - 1)"
     end
+
+    GLMakie.activate!()
     println("Saved animation to $filename")
 end
