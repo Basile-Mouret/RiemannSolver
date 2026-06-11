@@ -9,6 +9,7 @@ Fields
 - `cell_centers`  : cell barycenters
 - `cell_measure`  : cell areas
 - `faces`         : vertex index pair (a, b) per face
+- `face_centers`  : face midpoints
 - `face_cells`    : (left, right) cell indices; 0 means exterior (boundary side)
 - `face_normals`  : unit outward normal from the left cell at each face
 - `face_lengths`  : face lengths
@@ -21,6 +22,7 @@ struct Mesh2D <: AbstractMesh
     cell_centers   :: Vector{NTuple{2, Float64}}
     cell_measure   :: Vector{Float64}
     faces          :: Vector{NTuple{2, Int}}
+    face_centers   :: Vector{NTuple{2, Float64}}
     face_cells     :: Vector{NTuple{2, Int}}
     face_normals   :: Vector{NTuple{2, Float64}}
     face_lengths   :: Vector{Float64}
@@ -99,6 +101,7 @@ function load_mesh2D(filename::String) :: Mesh2D
     end
 
     faces          = NTuple{2,Int}[]
+    face_centers   = NTuple{2,Float64}[]
     face_cells_vec = NTuple{2,Int}[]
     face_normals   = NTuple{2,Float64}[]
     face_lengths   = Float64[]
@@ -124,6 +127,7 @@ function load_mesh2D(filename::String) :: Mesh2D
         len    = sqrt(dx^2 + dy^2)
         nx, ny = -dy / len, dx / len
         mx, my = (pa[1] + pb[1]) / 2, (pa[2] + pb[2]) / 2
+        push!(face_centers, (mx, my))
         cl = cell_centers[L]
         # flip if normal points toward L instead of away from it
         if (cl[1] - mx) * nx + (cl[2] - my) * ny > 0
@@ -160,7 +164,7 @@ function load_mesh2D(filename::String) :: Mesh2D
 
     return Mesh2D(
         points, cells, cell_centers, cell_measure,
-        faces, face_cells_vec, face_normals, face_lengths,
+        faces, face_centers, face_cells_vec, face_normals, face_lengths,
         boundary_faces, boundary_tags
     )
 end
