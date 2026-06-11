@@ -31,8 +31,9 @@ export AbstractEquation1D, Advection1D, Wave1D, Burgers1D, Euler1D
 export AbstractEquation2D, Advection2D
 export num_vars, max_wave_speed, flux, exact_solution!
 export entropy
-export AbstractBC
-export AbstractBC1D, Dirichlet, Reflecting, Outflow
+export AbstractBC, Outflow
+export AbstractBC1D, Dirichlet, Reflecting
+export AbstractBC2D, Dirichlet2D, Reflecting2D
 export explicit_euler_step!
 export solve
 export plot_cell_values, animate_cell_values
