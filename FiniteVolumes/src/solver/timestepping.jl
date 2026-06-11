@@ -19,8 +19,8 @@ function explicit_euler_step!(
             # compute the flux for the given equation
             F = flux(eq, uL, uR, mesh.face_normals[face_id])
             for v in 1:nvars
-                new_values[CL, v] -= (dt / mesh.cell_measure[CL]) * F[v]
-                new_values[CR, v] += (dt / mesh.cell_measure[CR]) * F[v]
+                new_values[CL, v] -= (dt * mesh.face_lengths[face_id] / mesh.cell_measure[CL]) * F[v]
+                new_values[CR, v] += (dt * mesh.face_lengths[face_id] / mesh.cell_measure[CR]) * F[v]
             end
         end
     end
@@ -34,14 +34,14 @@ function explicit_euler_step!(
                 uL = apply_ghost(bcs[tag], uR, mesh.face_centers[face_id], t)
                 F = flux(eq, uL, uR, mesh.face_normals[face_id])
                 for v in 1:nvars
-                    new_values[CR, v] += (dt / mesh.cell_measure[CR]) * F[v]
+                    new_values[CR, v] += (dt * mesh.face_lengths[face_id] / mesh.cell_measure[CR]) * F[v]
                 end
             else
                 uL = cell_values[CL, :]
                 uR = apply_ghost(bcs[tag], uL, mesh.face_centers[face_id], t)
                 F = flux(eq, uL, uR, mesh.face_normals[face_id])
                 for v in 1:nvars
-                    new_values[CL, v] -= (dt / mesh.cell_measure[CL]) * F[v]
+                    new_values[CL, v] -= (dt * mesh.face_lengths[face_id] / mesh.cell_measure[CL]) * F[v]
                 end
             end
         end
