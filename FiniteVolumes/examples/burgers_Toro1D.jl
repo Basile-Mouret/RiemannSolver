@@ -19,9 +19,10 @@ function u0(x)
 end
 
 CFL = 0.9
+final_time = 0.5
 max_time_steps = 1000
 
-U_hist, dt_hist = solve(mesh, eq, bcs, u0; max_time_steps = max_time_steps, CFL = CFL, final_time=0.5)
+U_hist, dt_hist = solve(mesh, eq, bcs, u0; max_time_steps = max_time_steps, CFL = CFL, final_time=final_time)
 
 u0_vals = [u0(x)[1] for x in mesh.cell_centers]
 display(plot_cell_values(mesh, u0_vals; title = "Initial condition"))

@@ -16,7 +16,7 @@ max_time_steps = 100
 final_time = 1.0
 CFL = 0.8
 
-U_hist, dt_hist = solve(mesh, eq, bcs, u0; max_time_steps = max_time_steps, CFL = CFL, final_time=1.0)
+U_hist, dt_hist = solve(mesh, eq, boundary_conditions, u0; max_time_steps = max_time_steps, CFL = CFL, final_time=final_time)
 
 xmid = mesh.cell_centers
 u0_vals = [u0(x)[1] for x in xmid]
