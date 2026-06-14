@@ -2,6 +2,8 @@ module FiniteVolumes
 
 
 include("boundary_conditions/BoundaryConditions.jl")
+include("boundary_conditions/eulerbc.jl")
+
 
 include("mesh/mesh.jl")
 include("mesh/mesh1D.jl")
@@ -36,7 +38,7 @@ export AbstractEquation2D, Advection2D, Wave2D
 export num_vars, max_wave_speed, flux, exact_solution!
 export entropy
 export AbstractBC, Outflow
-export AbstractBC1D, Dirichlet, Reflecting
+export AbstractBC1D, Dirichlet, Reflecting, ReflectingEuler1D
 export AbstractBC2D, Dirichlet2D, Reflecting2D
 export explicit_euler_step!
 export solve

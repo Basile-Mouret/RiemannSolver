@@ -61,3 +61,8 @@ function compute_dt(mesh::Mesh1D, eq::Euler1D, values::Matrix{Float64}, CFL::Flo
     dx = minimum(mesh.cell_measure)
     return CFL * dx / max_wave_speed(mesh, eq, values)
 end
+
+
+## boundary conditions
+
+

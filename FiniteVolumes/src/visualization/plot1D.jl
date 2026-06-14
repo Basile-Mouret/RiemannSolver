@@ -9,10 +9,15 @@ function plot_cell_values(mesh::Mesh1D, u::Vector{Float64}; u_exact = nothing, t
     fig = Figure(size = (800, 500))
     ax = Axis(fig[1, 1], title = title, xlabel = "x", ylabel = "U")
     stairs!(ax, mesh.cell_centers, u, step = :center, label = "Numerical", linewidth = 2)
+    all_vals = u
     if !isnothing(u_exact)
         stairs!(ax, mesh.cell_centers, u_exact, step = :center, label = "Exact", linestyle = :dash, linewidth = 2)
+        all_vals = vcat(all_vals, u_exact)
     end
     axislegend(ax)
+    ymin, ymax = extrema(all_vals)
+    pad = 0.05 * max(ymax - ymin, eps())
+    ylims!(ax, ymin - pad, ymax + pad)
     return fig
 end
 
@@ -27,8 +32,14 @@ function animate_cell_values(
 )
     t_hist = !isnothing(dt_hist) && length(dt_hist) == length(U_hist) ? cumsum(dt_hist) : nothing
 
+    all_vals = reduce(vcat, U_hist)
+    !isnothing(U_exact_hist) && append!(all_vals, reduce(vcat, U_exact_hist))
+    ymin, ymax = extrema(all_vals)
+    pad = 0.05 * max(ymax - ymin, eps())
+
     fig = Figure(size = (700, 750))
-    ax  = Axis(fig[1, 1], xlabel = "x", ylabel = "U", aspect = AxisAspect(1))
+    ax  = Axis(fig[1, 1], xlabel = "x", ylabel = "U", aspect = AxisAspect(1),
+               limits = (nothing, nothing, ymin - pad, ymax + pad))
     sl  = Slider(fig[2, 1], range = 1:length(U_hist), startvalue = 1)
 
     obs_numerical = @lift(U_hist[$(sl.value)])
@@ -80,10 +91,16 @@ function save_animation(
 )
     t_hist = !isnothing(dt_hist) && length(dt_hist) == length(U_hist) ? cumsum(dt_hist) : nothing
 
+    all_vals = reduce(vcat, U_hist)
+    !isnothing(U_exact_hist) && append!(all_vals, reduce(vcat, U_exact_hist))
+    ymin, ymax = extrema(all_vals)
+    pad = 0.05 * max(ymax - ymin, eps())
+
     CairoMakie.activate!()
 
     fig = Figure(size = (800, 500))
-    ax  = Axis(fig[1, 1], xlabel = "x", ylabel = "U")
+    ax  = Axis(fig[1, 1], xlabel = "x", ylabel = "U",
+               limits = (nothing, nothing, ymin - pad, ymax + pad))
     obs = Observable(U_hist[1])
     stairs!(ax, mesh.cell_centers, obs, step = :center, label = "Numerical")
     if !isnothing(U_exact_hist)
