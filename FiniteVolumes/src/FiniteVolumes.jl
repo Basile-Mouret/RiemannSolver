@@ -9,12 +9,16 @@ include("mesh/mesh2D.jl")
 
 include("RiemannSolver.jl")
 
+# Equations
 include("equations/Equations.jl")
+# 1D Equations
 include("equations/burgers.jl")
 include("equations/advection.jl")
-include("equations/advection2D.jl")
 include("equations/wave.jl")
 include("equations/euler.jl")
+# 2D Equations
+include("equations/advection2D.jl")
+include("equations/wave2D.jl")
 
 include("solver/timestepping.jl")
 include("solver/solver.jl")
@@ -28,7 +32,7 @@ export Mesh2D, load_mesh2D, face_outward_normal
 export solve_riemann_exact
 export AbstractEquation
 export AbstractEquation1D, Advection1D, Wave1D, Burgers1D, Euler1D
-export AbstractEquation2D, Advection2D
+export AbstractEquation2D, Advection2D, Wave2D
 export num_vars, max_wave_speed, flux, exact_solution!
 export entropy
 export AbstractBC, Outflow

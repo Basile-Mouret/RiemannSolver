@@ -1,6 +1,5 @@
 using FiniteVolumes
 
-N = 100
 mesh = load_mesh2D("meshes/triangle_conv2.msh")
 
 eq = Advection2D(c = (1.0, 0.0))
@@ -24,7 +23,7 @@ boundary_conditions = Dict(
 
 max_time_steps = 1000
 final_time = 3.0
-CFL = 0.9
+CFL = 1.0
 
 U_hist, dt_hist = solve(mesh, eq, boundary_conditions, u0; max_time_steps = max_time_steps, CFL = CFL, final_time=final_time)
 

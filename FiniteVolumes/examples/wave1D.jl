@@ -12,8 +12,8 @@ eq = Wave1D(kappa, rho)
 bcs = Dict("left" => Reflecting(), "right" => Reflecting())
 
 p01(x) = 0.2 < x < 0.4 ? 100 * exp(0.1 / ((x - 0.2) * (x - 0.4))) : 0.0
-p02(x) = 0.5 < x < 0.7 ? 100 * exp(0.1 / ((x - 0.5) * (x - 0.7))) : 0.0
-p0(x) = p01(x)+ p02(x)
+#p02(x) = 0.5 < x < 0.7 ? 100 * exp(0.1 / ((x - 0.5) * (x - 0.7))) : 0.0
+p0(x) = p01(x)#+ p02(x)
 u0_func(x) = 0.0
 
 ic(x) = [p0(x), u0_func(x)]
