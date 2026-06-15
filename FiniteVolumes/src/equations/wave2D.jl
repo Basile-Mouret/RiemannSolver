@@ -19,14 +19,12 @@ function flux(eq::Wave2D, uL::Vector{Float64}, uR::Vector{Float64}, normal::NTup
 end
 
 function apply_ghost(bc::Reflecting2D, u_interior::Vector{Float64}, x, ::Float64)
-    # TODO
     return [u_interior[1], -u_interior[2], -u_interior[3]]
 end
 
 function compute_dt(mesh::Mesh2D, eq::Wave2D, values::Matrix{Float64}, CFL::Float64)::Float64
     cell_perimeters = zeros(length(mesh.cells))
-    # should be precomputed in Mesh ...
-    # TODO
+    # TODO : should be precomputed in Mesh ...
     for (face_id, (CL, CR)) in enumerate(mesh.face_cells)
         l  = mesh.face_lengths[face_id]
         if CL!=0
