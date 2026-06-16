@@ -15,19 +15,21 @@ Fields
 - `face_lengths`  : face lengths
 - `boundary_faces`: indices into `faces` where right cell == 0
 - `boundary_tags` : physical group name → face indices (empty if no physical groups)
+- `cell_perimeters`: sum of face lengths bordering each cell
 """
 struct Mesh2D <: AbstractMesh
-    points         :: Vector{NTuple{2, Float64}}
-    cells          :: Vector{Vector{Int}}
-    cell_centers   :: Vector{NTuple{2, Float64}}
-    cell_measure   :: Vector{Float64}
-    faces          :: Vector{NTuple{2, Int}}
-    face_centers   :: Vector{NTuple{2, Float64}}
-    face_cells     :: Vector{NTuple{2, Int}}
-    face_normals   :: Vector{NTuple{2, Float64}}
-    face_lengths   :: Vector{Float64}
-    boundary_faces :: Vector{Int}
-    boundary_tags  :: Dict{String, Vector{Int}}
+    points          :: Vector{NTuple{2, Float64}}
+    cells           :: Vector{Vector{Int}}
+    cell_centers    :: Vector{NTuple{2, Float64}}
+    cell_measure    :: Vector{Float64}
+    faces           :: Vector{NTuple{2, Int}}
+    face_centers    :: Vector{NTuple{2, Float64}}
+    face_cells      :: Vector{NTuple{2, Int}}
+    face_normals    :: Vector{NTuple{2, Float64}}
+    face_lengths    :: Vector{Float64}
+    boundary_faces  :: Vector{Int}
+    boundary_tags   :: Dict{String, Vector{Int}}
+    cell_perimeters :: Vector{Float64}
 end
 
 # Shoelace formula; works for both triangles and convex/concave polygons
@@ -162,10 +164,17 @@ function load_mesh2D(filename::String) :: Mesh2D
 
     gmsh.finalize()
 
+    cell_perimeters = zeros(n_cells)
+    for (face_id, (CL, CR)) in enumerate(face_cells_vec)
+        l = face_lengths[face_id]
+        CL != 0 && (cell_perimeters[CL] += l)
+        CR != 0 && (cell_perimeters[CR] += l)
+    end
+
     return Mesh2D(
         points, cells, cell_centers, cell_measure,
         faces, face_centers, face_cells_vec, face_normals, face_lengths,
-        boundary_faces, boundary_tags
+        boundary_faces, boundary_tags, cell_perimeters
     )
 end
 

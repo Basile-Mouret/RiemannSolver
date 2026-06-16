@@ -25,18 +25,6 @@ function apply_ghost(bc::Reflecting2D, u_interior::AbstractVector{Float64}, x, :
 end
 
 function compute_dt(mesh::Mesh2D, eq::Wave2D, values::Matrix{Float64}, CFL::Float64)::Float64
-    cell_perimeters = zeros(length(mesh.cells))
-    # TODO : should be precomputed in Mesh ...
-    for (face_id, (CL, CR)) in enumerate(mesh.face_cells)
-        l  = mesh.face_lengths[face_id]
-        if CL!=0
-            cell_perimeters[CL] += l
-        end
-
-        if CR!=0
-            cell_perimeters[CR] += l
-        end
-    end
-    return CFL * (2.0 / sqrt(eq.kappa/eq.rho)) * minimum(mesh.cell_measure ./ cell_perimeters)
+    return CFL * (2.0 / sqrt(eq.kappa/eq.rho)) * minimum(mesh.cell_measure[i] / mesh.cell_perimeters[i] for i in eachindex(mesh.cell_measure))
 end
 

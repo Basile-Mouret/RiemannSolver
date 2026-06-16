@@ -75,16 +75,6 @@ function flux(eq::Euler2D, UL::AbstractVector{Float64}, UR::AbstractVector{Float
 end
 
 function compute_dt(mesh::Mesh2D, eq::Euler2D, values::Matrix{Float64}, CFL::Float64)::Float64
-    cell_perimeters = zeros(length(mesh.cells))
-    for (face_id, (CL, CR)) in enumerate(mesh.face_cells)
-        l = mesh.face_lengths[face_id]
-        if CL != 0
-            cell_perimeters[CL] += l
-        end
-        if CR != 0
-            cell_perimeters[CR] += l
-        end
-    end
-    return CFL * 2.0 * minimum(mesh.cell_measure ./ cell_perimeters) / max_wave_speed(mesh, eq, values)
+    return CFL * 2.0 * minimum(mesh.cell_measure[i] / mesh.cell_perimeters[i] for i in eachindex(mesh.cell_measure)) / max_wave_speed(mesh, eq, values)
 end
 
