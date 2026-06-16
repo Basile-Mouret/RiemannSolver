@@ -1,4 +1,17 @@
-using Roots
+"""
+helper function to find pressure in the exact riemann solver
+"""
+function _newton_raphson(f, df, p0; max_it::Int = 10, TOL::Float64 = 10^(-6))
+    p = p0
+    for _ in 1:max_it
+        p -= f(p)/df(p) 
+        if 2.0*abs(p-p0)/(p+p0) < TOL
+            return p
+        end
+        p0 = p
+    end
+    return p
+end
 
 """
 Exact Riemann Solver for the 1D Euler system
@@ -41,8 +54,7 @@ function solve_riemann_exact(S::T, WL::AbstractVector{T}, WR::AbstractVector{T},
     
 
     # Newton's method to find p*
-    pstar = find_zero((f, df), p0, Roots.Newton())
-    # I could also write the newton solver as described in the book
+    pstar = _newton_raphson(f, df, p0)
 
     # compute u*
     ustar = 0.5*(uL+uR+fR(pstar)-fL(pstar)) 
