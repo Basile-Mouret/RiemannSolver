@@ -1,5 +1,6 @@
 module FiniteVolumes
 
+using StaticArrays
 
 include("boundary_conditions/BoundaryConditions.jl")
 include("boundary_conditions/eulerbc.jl")

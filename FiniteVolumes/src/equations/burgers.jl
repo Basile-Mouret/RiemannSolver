@@ -2,8 +2,8 @@ struct Burgers1D <: AbstractEquation1D end
 
 num_vars(::Burgers1D) = 1
 
-function flux(::Burgers1D, Ul::Vector{Float64}, Ur::Vector{Float64})
-    f(x) = [0.5*x*x]
+function flux(::Burgers1D, Ul::AbstractVector{Float64}, Ur::AbstractVector{Float64})
+    f(x) = SVector(0.5*x*x)
     ul, ur = Ul[1], Ur[1]
     if ul > ur
         S = 0.5*(ul+ur)

@@ -3,7 +3,7 @@ using Roots
 """
 Exact Riemann Solver for the 1D Euler system
 """
-function solve_riemann_exact(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
+function solve_riemann_exact(S::T, WL::AbstractVector{T}, WR::AbstractVector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
     rhoL, uL, pL = WL
     rhoR, uR, pR = WR
 
@@ -58,7 +58,7 @@ function solve_riemann_exact(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL
                 return WL
             else
                 rhostarL = rhoL * (pstar/pL + (gamma-1.0)/(gamma+1.0))/((gamma-1.0)/(gamma+1.0)* pstar/pL + 1.0)
-                return [rhostarL, ustar, pstar]
+                return SVector(rhostarL, ustar, pstar)
             end
 
         else            # left fan
@@ -69,12 +69,12 @@ function solve_riemann_exact(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL
                 return WL
             elseif S>STL
                 rhostarL = rhoL*(pstar/pL)^(1.0/gamma) 
-                return [rhostarL, ustar, pstar]
+                return SVector(rhostarL, ustar, pstar)
             else
                 rhoLfan = rhoL * ((2.0/(gamma+1.0) + (gamma-1.0)/((gamma+1.0)*aL) * (uL - S))^(2.0/(gamma-1.0)) )
                 uLfan = 2.0/(gamma+1.0) * (aL + 0.5*(gamma-1.0)*uL + S)
                 pLfan = pL * ((2.0/(gamma+1.0) + (gamma-1.0)/((gamma+1.0)*aL) * (uL - S))^(2.0*gamma/(gamma-1.0)))
-                return [rhoLfan, uLfan, pLfan]
+                return SVector(rhoLfan, uLfan, pLfan)
             end
         end
     else
@@ -85,7 +85,7 @@ function solve_riemann_exact(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL
                 return WR
             else
                 rhostarR = rhoR * (pstar/pR + (gamma-1.0)/(gamma+1.0))/((gamma-1.0)/(gamma+1.0)* pstar/pR + 1.0)
-                return [rhostarR, ustar, pstar]
+                return SVector(rhostarR, ustar, pstar)
             end
         else            # left fan
             SHR = uR + aR
@@ -95,12 +95,12 @@ function solve_riemann_exact(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL
                 return WR
             elseif S<STR
                 rhostarR = rhoR*(pstar/pR)^(1.0/gamma) 
-                return [rhostarR, ustar, pstar]
+                return SVector(rhostarR, ustar, pstar)
             else
                 rhoRfan = rhoR * ((2.0/(gamma+1.0) - (gamma-1.0)/((gamma+1.0)*aR) * (uR - S))^(2.0/(gamma-1.0)) )
                 uRfan = 2.0/(gamma+1.0) * (-aR + 0.5*(gamma-1.0)*uR + S)
                 pRfan = pR * ((2.0/(gamma+1.0) - (gamma-1.0)/((gamma+1.0)*aR) * (uR - S))^(2.0*gamma/(gamma-1.0)))
-                return [rhoRfan, uRfan, pRfan]
+                return SVector(rhoRfan, uRfan, pRfan)
             end
         end
     end

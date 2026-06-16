@@ -7,7 +7,7 @@ Advection1D(; c::Float64, flux_type::Symbol = :upwind) = Advection1D(c, flux_typ
 
 num_vars(::Advection1D) = 1
 
-function flux(eq::Advection1D, uL::Vector{Float64}, uR::Vector{Float64})
+function flux(eq::Advection1D, uL::AbstractVector{Float64}, uR::AbstractVector{Float64})
     if eq.flux_type == :upwind
         F = eq.c > 0 ? eq.c * uL[1] : eq.c * uR[1]
     elseif eq.flux_type == :centered
@@ -19,7 +19,7 @@ function flux(eq::Advection1D, uL::Vector{Float64}, uR::Vector{Float64})
     else
         error("Unknown flux_type: $(eq.flux_type)")
     end
-    return [F]
+    return SVector(F)
 end
 
 function exact_solution!(utrue::Matrix{Float64}, eq::Advection1D, xmid::Vector{Float64},

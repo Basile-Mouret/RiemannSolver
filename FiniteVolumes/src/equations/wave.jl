@@ -5,17 +5,17 @@ end
 
 num_vars(::Wave1D) = 2
 
-function flux(eq::Wave1D, uL::Vector{Float64}, uR::Vector{Float64})
+function flux(eq::Wave1D, uL::AbstractVector{Float64}, uR::AbstractVector{Float64})
     pl, ul = uL[1], uL[2]
     pr, ur = uR[1], uR[2]
     c = sqrt(eq.kappa / eq.rho)
     Fp = (0.5 / eq.rho) * (ur + ul) - 0.5 * c * (pr - pl)
     Fu = 0.5 * eq.kappa * (pr + pl) - 0.5 * c * (ur - ul)
-    return [Fp, Fu]
+    return SVector(Fp, Fu)
 end
 
-function apply_ghost(bc::Reflecting, u_interior::Vector{Float64}, x, ::Float64)
-    return [u_interior[1], -u_interior[2]]
+function apply_ghost(bc::Reflecting, u_interior::AbstractVector{Float64}, x, ::Float64)
+    return SVector(u_interior[1], -u_interior[2])
 end
 
 function exact_solution!(utrue::Matrix{Float64}, eq::Wave1D, xmid::Vector{Float64}, ic::Function, bcs::Dict, x0::Float64, x1::Float64, t::Float64)

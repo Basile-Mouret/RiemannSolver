@@ -2,7 +2,7 @@
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "ac07b077b0def9f755abb760c4b0788bd10b273b"
+project_hash = "13c1dc050de835c34606746027506cfd0a4bc3d4"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -465,7 +465,7 @@ weakdeps = ["PDMats", "SparseArrays", "StaticArrays", "Statistics"]
     FillArraysStatisticsExt = "Statistics"
 
 [[deps.FiniteVolumes]]
-deps = ["CairoMakie", "DelaunayTriangulation", "GeometryBasics", "Gmsh", "LinearAlgebra", "Observables", "Revise", "Roots", "StableRNGs"]
+deps = ["CairoMakie", "DelaunayTriangulation", "GLMakie", "GeometryBasics", "Gmsh", "LinearAlgebra", "Observables", "Revise", "Roots", "StableRNGs"]
 path = "."
 uuid = "f5d106ee-a13c-4ec4-be1c-23882ad05362"
 version = "0.1.0"
