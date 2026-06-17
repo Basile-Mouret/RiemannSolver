@@ -61,3 +61,5 @@ function compute_dt(mesh::Mesh1D, eq::Advection1D, values::Matrix{Float64}, CFL:
     return CFL * dx / abs(eq.c)
 end
 
+output_fields(::Advection1D) = [OutputField("u", :scalar, U -> U[1])]
+

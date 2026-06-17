@@ -30,6 +30,9 @@ include("solver/solver.jl")
 include("visualization/plot1D.jl")
 include("visualization/plot2D.jl")
 
+include("visualization/data_to_vtk.jl")
+include("visualization/vtkStreamWriter.jl")
+
 export AbstractMesh
 export Mesh1D, generate_1DMesh, quadrature_1D, compute_L2_1D
 export Mesh2D, load_mesh2D, face_outward_normal
@@ -38,6 +41,7 @@ export AbstractEquation
 export AbstractEquation1D, Advection1D, Wave1D, Burgers1D, Euler1D
 export AbstractEquation2D, Advection2D, Wave2D, Euler2D
 export num_vars, max_wave_speed, flux, exact_solution!
+export OutputField, output_fields
 export entropy
 export AbstractBC, Outflow, apply_ghost
 export AbstractBC1D, Dirichlet, Reflecting, ReflectingEuler1D
@@ -46,6 +50,7 @@ export AbstractBC2D, Dirichlet2D, Reflecting2D, ReflectingEuler2D
 export explicit_euler_step!
 export solve
 export plot_cell_values, animate_cell_values, save_animation
-export show_heatmap
+export data_to_vtk, VTKStreamWriter, write_frame!, maybe_write!, close_writer!
+
 
 end

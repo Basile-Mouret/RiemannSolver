@@ -63,6 +63,16 @@ function compute_dt(mesh::Mesh1D, eq::Euler1D, values::Matrix{Float64}, CFL::Flo
     return CFL * dx / max_wave_speed(mesh, eq, values)
 end
 
+function output_fields(eq::Euler1D)
+    γ = eq.gamma
+    [
+        OutputField("density",  :scalar, U -> U[1]),
+        OutputField("velocity", :scalar, U -> U[2] / U[1]),
+        OutputField("pressure", :scalar, U -> (γ - 1.0) * (U[3] - 0.5 * U[2]^2 / U[1])),
+        OutputField("Energy",   :scalar, U -> U[3]),
+    ]
+end
+
 
 ## boundary conditions
 

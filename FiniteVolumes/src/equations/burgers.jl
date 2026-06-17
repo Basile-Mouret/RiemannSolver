@@ -26,3 +26,5 @@ end
 function compute_dt(mesh::Mesh1D, eq::Burgers1D, values::Matrix{Float64}, CFL::Float64)::Float64
     return minimum(CFL .* mesh.cell_measure ./ abs.(values))
 end
+
+output_fields(::Burgers1D) = [OutputField("u", :scalar, U -> U[1])]

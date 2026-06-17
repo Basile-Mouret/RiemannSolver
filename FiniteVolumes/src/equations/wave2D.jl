@@ -28,3 +28,10 @@ function compute_dt(mesh::Mesh2D, eq::Wave2D, values::Matrix{Float64}, CFL::Floa
     return CFL * (2.0 / sqrt(eq.kappa/eq.rho)) * minimum(mesh.cell_measure[i] / mesh.cell_perimeters[i] for i in eachindex(mesh.cell_measure))
 end
 
+function output_fields(::Wave2D)
+    [
+        OutputField("pressure", :scalar, U -> U[1]),
+        OutputField("velocity", :vector, U -> SVector(U[2], U[3])),
+    ]
+end
+

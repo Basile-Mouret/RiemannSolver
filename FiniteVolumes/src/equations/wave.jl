@@ -48,3 +48,10 @@ function compute_dt(mesh::Mesh1D, eq::Wave1D, values::Matrix{Float64}, CFL::Floa
     return CFL * dx / sqrt(eq.kappa / eq.rho)
 end
 
+function output_fields(::Wave1D)
+    [
+        OutputField("pressure", :scalar, U -> U[1]),
+        OutputField("velocity", :scalar, U -> U[2]),
+    ]
+end
+

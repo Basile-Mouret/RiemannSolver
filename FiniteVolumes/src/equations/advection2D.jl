@@ -31,4 +31,6 @@ function compute_dt(mesh::Mesh2D, eq::Advection2D, values::Matrix{Float64}, CFL:
     return minimum(CFL .* mesh.cell_measure ./ sum_outgoing)
 end
 
+output_fields(::Advection2D) = [OutputField("u", :scalar, U -> U[1])]
+
 
