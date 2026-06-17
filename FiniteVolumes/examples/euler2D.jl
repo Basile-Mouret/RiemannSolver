@@ -1,4 +1,5 @@
 using FiniteVolumes
+using StaticArrays
 
 mesh = load_mesh2D("meshes/mesh_hole.msh")
 println(keys(mesh.boundary_tags))
@@ -20,16 +21,18 @@ function ic(x)
     u, v = 0.0, 0.0
     p = 1.0/γ
     E = p/(γ-1.0) + 0.5*rho*(u^2+v^2)
-    return [rho, rho*u, rho*v, E]
+    return SVector(rho, rho*u, rho*v, E)
 end
 
-W_inflow = [ρ, ρ*u, ρ*v, E]
+W_inflow = SVector(ρ, ρ*u, ρ*v, E)
 
 
-boundary_conditions = Dict(
+boundary_conditions = Dict{String, Union{Outflow, Dirichlet2D, ReflectingEuler2D}}(
                            "Bottom"         => Outflow(),
                            "Top"            => Outflow(),
-                           "Left"           => Dirichlet2D((x,t) -> W_inflow),
+                           # let-bind the captured value so the closure is type-stable
+                           # (capturing a non-const global would box it and allocate)
+                           "Left"           => let W = W_inflow; Dirichlet2D((x,t) -> W) end,
                            "Right"          => Outflow(),
                            "HoleBoundary"   => ReflectingEuler2D(),
                           )

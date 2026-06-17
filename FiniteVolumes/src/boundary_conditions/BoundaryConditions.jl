@@ -11,7 +11,7 @@ end
 
 abstract type AbstractBC1D <: AbstractBC end
 
-function apply_ghost(bc::AbstractBC1D, u_interior::AbstractVector{Float64}, x, t::Float64)
+function apply_ghost(bc::AbstractBC1D, ::AbstractVector{Float64}, x, ::Float64)
     error("apply_ghost not implemented for $(typeof(bc))")
 end
 
@@ -34,12 +34,12 @@ function apply_ghost(bc::AbstractBC2D, u_interior::AbstractVector{Float64}, x, t
     error("apply_ghost not implemented for $(typeof(bc))")
 end
 
-struct Dirichlet2D <: AbstractBC2D
-    value::Function
+struct Dirichlet2D{F<:Function} <: AbstractBC2D
+    value::F
 end
 
-function apply_ghost(bc::Dirichlet2D, ::AbstractVector{Float64}, x, t::Float64)
-    return bc.value(x, t)
+function apply_ghost(bc::Dirichlet2D{F}, uR::SVector{N,T}, x, t::Float64) where {F<:Function, N, T}
+    return bc.value(x, t)::SVector{N,T}
 end
 
 struct Reflecting2D <: AbstractBC2D end

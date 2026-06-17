@@ -57,6 +57,8 @@ function build_mesh(outfile = "mesh.msh")
     gmsh.model.mesh.field.setNumber(f_thr, "SizeMax",  LC_FAR)
     gmsh.model.mesh.field.setNumber(f_thr, "DistMin",  0.0)
     gmsh.model.mesh.field.setNumber(f_thr, "DistMax",  DIST_RAMP)
+    
+    gmsh.option.setNumber("Mesh.MeshSizeFactor", 1.0)
 
     gmsh.model.mesh.field.setAsBackgroundMesh(f_thr)
     gmsh.option.setNumber("Mesh.MeshSizeFromPoints",         0)

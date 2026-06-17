@@ -2,14 +2,15 @@
 Interface to solve a hyperbolic problem using finite volumes
 """
 function solve(
-    mesh::AbstractMesh,
-    eq::AbstractEquation,
-    bcs,
-    ic::Function;
+    mesh::M,
+    eq::E,
+    bcs::B,
+    ic::IC;
     max_time_steps::Int,
     final_time::Float64,
     CFL::Float64 = 0.9,
-)
+) where {M<:AbstractMesh, E<:AbstractEquation, B, IC}
+
     nvars = num_vars(eq)
 
     N = length(mesh.cells)
