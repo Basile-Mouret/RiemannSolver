@@ -24,7 +24,7 @@ function solve_riemann_exact(S::T, WL::AbstractVector{T}, WR::AbstractVector{T},
     aR = sqrt(gamma*pR/rhoR)
 
     # compute p* and u* using Newton
-    #   build f
+    # build f
 
     AL = 2.0 / ((gamma+1.0) * rhoL)
     BL = ((gamma-1.0) / (gamma+1.0)) * pL
@@ -128,6 +128,7 @@ end
 HLL
 """
 function solve_riemann_hll(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
+    
 end
 
 """

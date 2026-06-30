@@ -1,7 +1,7 @@
 using FiniteVolumes
 using StaticArrays
 
-mesh = load_mesh2D("meshes/mesh_hole_x16.msh")
+mesh = load_mesh2D("meshes/cylinder2Dprecise.msh")
 println(keys(mesh.boundary_tags))
 
 
@@ -32,11 +32,11 @@ boundary_conditions = Dict{String, Union{Outflow, typeof(dirichlet_inflow), Refl
     "Top"          => Outflow(),
     "Left"         => dirichlet_inflow,
     "Right"        => Outflow(),
-    "HoleBoundary" => ReflectingEuler2D(),
+    "Cylinder"     => ReflectingEuler2D(),
 )
 
-max_time_steps = 10000
-final_time = 3.0
+max_time_steps = 100000
+final_time = 30.0
 CFL = 0.9
 
 

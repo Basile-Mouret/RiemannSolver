@@ -22,7 +22,7 @@ function VTKStreamWriter(mesh::AbstractMesh, eq::AbstractEquation;
     cells  = _vtk_cells(mesh)
 
     pvd = paraview_collection(joinpath(outdir, filename))  # stays open
-    VTKStreamWriter(eq, pvd, points, cells, outdir, filename, Float64(dt_out), 0.0, 0)
+    VTKStreamWriter(eq, pvd, points, cells, String(outdir), String(filename), Float64(dt_out), 0.0, 0)
 end
 
 # Write the current state as a frame at time t

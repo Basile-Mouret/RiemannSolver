@@ -3,24 +3,25 @@ struct Burgers1D <: AbstractEquation1D end
 num_vars(::Burgers1D) = 1
 
 function flux(::Burgers1D, Ul::AbstractVector{Float64}, Ur::AbstractVector{Float64})
-    f(x) = SVector(0.5*x*x)
     ul, ur = Ul[1], Ur[1]
-    if ul > ur
-        S = 0.5*(ul+ur)
-        if S> 0
-            return f(ul)
-        else 
-            return f(ur)
+    us = 0.0
+    if ul > ur # shock
+        S = 0.5*(ul+ur) # shock speed
+        if S> 0 # right shock
+            return us = ul
+        else # left shock
+            return us = ur
         end
-    else
-        if ul >= 0
-            return f(ul)
-        elseif ur <= 0
-            return f(ur)
-        else
-            return f(0.)
+    else # rarefaction
+        if ul >= 0 # right supersonic rarefaction
+            return us = ul
+        elseif ur <= 0 # left supersonic rarefaction
+            return us = ur
+        else # transonic rarefaction
+            return us = 0.0 
         end
     end
+    return 0.5*us*us
 end
 
 function compute_dt(mesh::Mesh1D, eq::Burgers1D, values::Matrix{Float64}, CFL::Float64)::Float64

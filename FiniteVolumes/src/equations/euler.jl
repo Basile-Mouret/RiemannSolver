@@ -44,18 +44,27 @@ function flux(eq::Euler1D, UL::AbstractVector{Float64}, UR::AbstractVector{Float
     WL = _cons_to_prim_euler_1D_ideal_gas(UL, eq.gamma)
     WR = _cons_to_prim_euler_1D_ideal_gas(UR, eq.gamma)
 
+    function F(W)
+        rho, u, p = W
+        rhou = rho * u
+        E = p / (eq.gamma - 1.0) + 0.5 * rho * u^2
+        return SVector(rhou, rhou * u + p, u * (E + p))
+    end
+
     # solve the Riemann problem at the interface (x/t = 0.0)
     if eq.solver == :exact
-        rho, u, p = solve_riemann_exact(0.0, WL, WR, eq.gamma)
+        Ws = solve_riemann_exact(0.0, WL, WR, eq.gamma)
+    # elseif eq.solver == :Lax_Friedrich
+    #     return 0.5*(F(WL) + F(WR)) + 0.5*(dt/dx)*(UL-UR) I need dt and dx in my flux call
+    elseif eq.solver == :hll
+        
     else
         rho, u, p = 0.0, 0.0, 0.0
     end
 
     # reconstruct the fluxesbased on the star state
-    rhou = rho * u
-    E = p / (eq.gamma - 1.0) + 0.5 * rho * u^2
 
-    return SVector(rhou, rhou * u + p, u * (E + p))
+    return F(Ws) 
 end
 
 function compute_dt(mesh::Mesh1D, eq::Euler1D, values::Matrix{Float64}, CFL::Float64)::Float64

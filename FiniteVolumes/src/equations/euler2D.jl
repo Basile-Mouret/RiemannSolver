@@ -27,20 +27,20 @@ end
 
 num_vars(::Euler2D) = 4
 
-function max_wave_speed(::Mesh2D, eq::Euler2D, U::Matrix{Float64})
-    s_max = 0.0
-    nvars = num_vars(eq)
-    for i in axes(U, 1)
-        U_cell = SVector{nvars}(@view U[i, :])
-
-        rho, u, v, p = _cons_to_prim_euler_2D_ideal_gas(U_cell, eq.gamma)
-
-        a = sqrt(eq.gamma * p / rho)
-        s_max = max(s_max, sqrt(u*u + v*v) + a)
-    end
-
-    return s_max
-end
+# function max_wave_speed(::Mesh2D, eq::Euler2D, U::Matrix{Float64})
+#     s_max = 0.0
+#     nvars = num_vars(eq)
+#     for i in axes(U, 1)
+#         U_cell = SVector{nvars}(@view U[i, :])
+#
+#         rho, u, v, p = _cons_to_prim_euler_2D_ideal_gas(U_cell, eq.gamma)
+#
+#         a = sqrt(eq.gamma * p / rho)
+#         s_max = max(s_max, sqrt(u*u + v*v) + a)
+#     end
+#
+#     return s_max
+# end
 
 
 function flux(eq::Euler2D, UL::AbstractVector{Float64}, UR::AbstractVector{Float64}, normal::NTuple{2, Float64})
@@ -58,6 +58,8 @@ function flux(eq::Euler2D, UL::AbstractVector{Float64}, UR::AbstractVector{Float
                                          SVector(WL[1], WL[2] * nx + WL[3] * ny, WL[4]), #projecting WL and WR on the normal
                                          SVector(WR[1], WR[2] * nx + WR[3] * ny, WR[4]),
                                          eq.gamma)
+    elseif eq.solver == :Lax_Friedriech
+        error("not implemented")
     else
         error("This Rieman solver is not implemented")
     end
@@ -74,8 +76,22 @@ function flux(eq::Euler2D, UL::AbstractVector{Float64}, UR::AbstractVector{Float
             uh*(E+p))
 end
 
-function compute_dt(mesh::Mesh2D, eq::Euler2D, values::Matrix{Float64}, CFL::Float64)::Float64
-    return CFL * 2.0 * minimum(mesh.cell_measure[i] / mesh.cell_perimeters[i] for i in eachindex(mesh.cell_measure)) / max_wave_speed(mesh, eq, values)
+function compute_dt(mesh::Mesh2D, eq::Euler2D, U::Matrix{Float64}, CFL::Float64)::Float64
+    # not optimal, I could try to efficiently compute minimum(cell_meas/(s_max_into_cell * cell_perimeter))
+    # this way I can have finer mesh at low speed locations
+
+    s_max = 0.0
+    nvars = num_vars(eq)
+    for i in axes(U, 1)
+        U_cell = SVector{nvars}(@view U[i, :])
+
+        rho, u, v, p = _cons_to_prim_euler_2D_ideal_gas(U_cell, eq.gamma)
+
+        a = sqrt(eq.gamma * p / rho)
+        s_max = max(s_max, sqrt(u*u + v*v) + a)
+    end
+
+    return CFL * 2.0 * minimum(mesh.cell_measure[i] / mesh.cell_perimeters[i] for i in eachindex(mesh.cell_measure)) / s_max 
 end
 
 function output_fields(eq::Euler2D)

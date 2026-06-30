@@ -17,4 +17,4 @@ max_time_steps = 100
 final_time = 1.0
 CFL = 0.8
 
-solve(mesh, eq, boundary_conditions, u0; max_time_steps = max_time_steps, CFL = CFL, final_time = final_time, output_dir = "out/advection1D")
+solve(mesh, eq, boundary_conditions, u0; max_time_steps = max_time_steps, CFL = CFL, final_time = final_time, output_dir = "out/advection1D/")
