@@ -1,7 +1,7 @@
 using FiniteVolumes
 using StaticArrays
 
-mesh = load_mesh2D("meshes/cylinder2Dprecise.msh")
+mesh = load_mesh2D("meshes/cylinder2D.msh")
 println(keys(mesh.boundary_tags))
 
 

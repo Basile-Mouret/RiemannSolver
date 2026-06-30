@@ -27,10 +27,6 @@ include("equations/euler2D.jl")
 include("solver/timestepping.jl")
 include("solver/solver.jl")
 
-include("visualization/plot1D.jl")
-include("visualization/plot2D.jl")
-
-include("visualization/data_to_vtk.jl")
 include("visualization/vtkStreamWriter.jl")
 
 export AbstractMesh
@@ -49,8 +45,7 @@ export AbstractBC2D, Dirichlet2D, Reflecting2D, ReflectingEuler2D
  
 export explicit_euler_step!
 export solve
-export plot_cell_values, animate_cell_values, save_animation
-export data_to_vtk, VTKStreamWriter, write_frame!, maybe_write!, close_writer!
+export VTKStreamWriter, write_frame!, maybe_write!, close_writer!
 
 
 end
