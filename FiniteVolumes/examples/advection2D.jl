@@ -1,7 +1,7 @@
 using FiniteVolumes
 using StaticArrays
 
-mesh = load_mesh2D("meshes/triangle_conv2.msh")
+mesh = load_mesh2D("meshes/Triangles/triangle_conv2.msh")
 
 eq = Advection2D(c = (1.0, 0.0))
 

@@ -7,7 +7,7 @@ Wave2D(; kappa::Float64, rho::Float64) = Wave2D(kappa, rho)
 
 num_vars(::Wave2D) = 3
 
-function flux(eq::Wave2D, uL::AbstractVector{Float64}, uR::AbstractVector{Float64}, normal::NTuple{2, Float64})
+function flux(eq::Wave2D, uL::AbstractVector{Float64}, uR::AbstractVector{Float64}, normal::SVector{2, Float64})
     # Godunov's Flux presented in the UPPA course
     pL, ULx, ULy = uL[1], uL[2], uL[3]
     pR, URx, URy = uR[1], uR[2], uR[3]

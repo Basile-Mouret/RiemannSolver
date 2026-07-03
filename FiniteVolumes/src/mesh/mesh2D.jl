@@ -18,22 +18,24 @@ Fields
 - `cell_perimeters`: sum of face lengths bordering each cell
 """
 struct Mesh2D <: AbstractMesh
-    points          :: Vector{NTuple{2, Float64}}
+    points          :: Vector{SVector{2, Float64}}
     cells           :: Vector{Vector{Int}}
-    cell_centers    :: Vector{NTuple{2, Float64}}
+    cell_centers    :: Vector{SVector{2, Float64}}
     cell_measure    :: Vector{Float64}
-    faces           :: Vector{NTuple{2, Int}}
-    face_centers    :: Vector{NTuple{2, Float64}}
-    face_cells      :: Vector{NTuple{2, Int}}
-    face_normals    :: Vector{NTuple{2, Float64}}
+    faces           :: Vector{SVector{2, Int}}
+    face_centers    :: Vector{SVector{2, Float64}}
+    face_cells      :: Vector{SVector{2, Int}}
+    face_normals    :: Vector{SVector{2, Float64}}
     face_lengths    :: Vector{Float64}
     boundary_faces  :: Vector{Int}
     boundary_tags   :: Dict{String, Vector{Int}}
     cell_perimeters :: Vector{Float64}
 end
 
-# Shoelace formula; works for both triangles and convex/concave polygons
-function _polygon_area(pts::Vector{NTuple{2, Float64}}) :: Float64
+"""
+computes polygon area using the shoelace formula
+"""
+function _polygon_area(pts::Vector{SVector{2, Float64}}) :: Float64
     n = length(pts)
     A = 0.0
     for i in 1:n
@@ -44,10 +46,7 @@ function _polygon_area(pts::Vector{NTuple{2, Float64}}) :: Float64
 end
 
 """
-    load_mesh2D(filename) -> Mesh2D
-
-Read a Gmsh .msh file (MSH2 or MSH4) and build a `Mesh2D` with full face
-connectivity, outward unit normals, and boundary physical-group tags.
+reads a Gmsh .msh file and builds the corresponding 2D mesh
 """
 function load_mesh2D(filename::String) :: Mesh2D
     gmsh.initialize()
@@ -56,7 +55,7 @@ function load_mesh2D(filename::String) :: Mesh2D
     # Nodes 
     node_tags, node_coords, _ = gmsh.model.mesh.getNodes()
     n_nodes = length(node_tags)
-    points = Vector{NTuple{2, Float64}}(undef, n_nodes)
+    points = Vector{SVector{2, Float64}}(undef, n_nodes)
     node_tag_to_idx = Dict{Int, Int}()
     for i in 1:n_nodes
         tag = node_tags[i]
@@ -80,7 +79,7 @@ function load_mesh2D(filename::String) :: Mesh2D
     n_cells = length(cells)
 
     # Cell geometry
-    cell_centers = Vector{NTuple{2, Float64}}(undef, n_cells)
+    cell_centers = Vector{SVector{2, Float64}}(undef, n_cells)
     cell_measure = Vector{Float64}(undef, n_cells)
     for (c, verts) in enumerate(cells)
         pts = [points[v] for v in verts]
@@ -91,24 +90,24 @@ function load_mesh2D(filename::String) :: Mesh2D
 
     # Face connectivity
     # Map canonical edge key (min,max) → list of (cell_id, directed_edge (a,b))
-    edge_dict = Dict{NTuple{2,Int}, Vector{Tuple{Int, NTuple{2,Int}}}}()
+    edge_dict = Dict{SVector{2,Int}, Vector{Tuple{Int, SVector{2,Int}}}}()
     for (c, verts) in enumerate(cells)
         n = length(verts)
         for i in 1:n
             a = verts[i]
             b = verts[mod1(i + 1, n)]
-            key = minmax(a, b)
+            key = SVector(minmax(a, b))
             push!(get!(edge_dict, key, []), (c, (a, b)))
         end
     end
 
-    faces          = NTuple{2,Int}[]
-    face_centers   = NTuple{2,Float64}[]
-    face_cells_vec = NTuple{2,Int}[]
-    face_normals   = NTuple{2,Float64}[]
+    faces          = SVector{2,Int}[]
+    face_centers   = SVector{2,Float64}[]
+    face_cells_vec = SVector{2,Int}[]
+    face_normals   = SVector{2,Float64}[]
     face_lengths   = Float64[]
     boundary_faces = Int[]
-    face_lookup    = Dict{NTuple{2,Int}, Int}()  # canonical key → face index
+    face_lookup    = Dict{SVector{2,Int}, Int}()  # canonical key → face index
 
     for (key, cell_list) in edge_dict
         face_id = length(faces) + 1
@@ -154,7 +153,7 @@ function load_mesh2D(filename::String) :: Mesh2D
                 for j in 1:n_edges
                     a = node_tag_to_idx[et_nodes[2*(j-1) + 1]]
                     b = node_tag_to_idx[et_nodes[2*(j-1) + 2]]
-                    fid = get(face_lookup, minmax(a, b), 0)
+                    fid = get(face_lookup, SVector(minmax(a, b)), 0)
                     fid > 0 && push!(group_faces, fid)
                 end
             end
@@ -172,20 +171,26 @@ function load_mesh2D(filename::String) :: Mesh2D
     end
 
     return Mesh2D(
-        points, cells, cell_centers, cell_measure,
-        faces, face_centers, face_cells_vec, face_normals, face_lengths,
-        boundary_faces, boundary_tags, cell_perimeters
-    )
+                  points,
+                  cells,
+                  cell_centers,
+                  cell_measure,
+                  faces,
+                  face_centers,
+                  face_cells_vec,
+                  face_normals,
+                  face_lengths,
+                  boundary_faces,
+                  boundary_tags,
+                  cell_perimeters
+                 )
 end
 
 """
-    face_outward_normal(mesh, face_id, cell_id) -> NTuple{2,Float64}
-
-Return the outward unit normal from `cell_id` across `face_id`.
-Flips the stored normal when `cell_id` is the right cell.
+return the outward unit normal from `cell_id` across `face_id`.
 """
-function face_outward_normal(mesh::Mesh2D, face_id::Int, cell_id::Int) :: NTuple{2, Float64}
-    L, _ = mesh.face_cells[face_id]
+function face_outward_normal(mesh::Mesh2D, face_id::Int, cell_id::Int) :: SVector{2, Float64}
     n = mesh.face_normals[face_id]
-    return cell_id == L ? n : (-n[1], -n[2])
+    L, _ = mesh.face_cells[face_id]
+    return cell_id == L ? n : SVector(-n[1], -n[2])
 end

@@ -1,6 +1,16 @@
 using WriteVTK
 
-# Build the 3 × npoints node array (z = 0 for a 2D mesh) used by VTK.
+"""
+build the 3xn node array, sets unused dimensions to 0 (for 1D and 2D) as vtk points are always defined in a 3D space
+"""
+function _vtk_points(mesh::Mesh1D)
+    points = zeros(3, length(mesh.points))
+    @inbounds for (i, x) in enumerate(mesh.points)
+        points[1, i] = x
+    end
+    return points
+end
+
 function _vtk_points(mesh::Mesh2D)
     points = zeros(3, length(mesh.points))
     @inbounds for (i, p) in enumerate(mesh.points)
@@ -10,24 +20,14 @@ function _vtk_points(mesh::Mesh2D)
     return points
 end
 
-# Map node count to a VTK cell type.
-_vtk_celltype(n) = n == 3 ? VTKCellTypes.VTK_TRIANGLE :
+# 1D mesh: points laid out along x, y = z = 0; cells are 2-node line segments.
+_vtk_cells(mesh::Mesh1D) = [MeshCell(VTKCellTypes.VTK_LINE, (c[1], c[2])) for c in mesh.cells]
+# finds the 2D cell type corresponding to the number of nodes (only triangles and quad for now)
+_vtk_2Dcelltype(n) = n == 3 ? VTKCellTypes.VTK_TRIANGLE :
                    n == 4 ? VTKCellTypes.VTK_QUAD :
                    error("unsupported cell with $n nodes")
 
-_vtk_cells(mesh::Mesh2D) = [MeshCell(_vtk_celltype(length(c)), c) for c in mesh.cells]
-
-# 1D mesh: points laid out along x, y = z = 0; cells are 2-node line segments.
-function _vtk_points(mesh::Mesh1D)
-    points = zeros(3, length(mesh.points))
-    @inbounds for (i, x) in enumerate(mesh.points)
-        points[1, i] = x
-    end
-    return points
-end
-
-_vtk_cells(mesh::Mesh1D) =
-    [MeshCell(VTKCellTypes.VTK_LINE, (c[1], c[2])) for c in mesh.cells]
+_vtk_cells(mesh::Mesh2D) = [MeshCell(_vtk_2Dcelltype(length(c)), c) for c in mesh.cells]
 
 # Write every field declared by `output_fields(eq)` as cell data on `vtk`.
 # `U` is the ncells × nvars matrix of conserved states.

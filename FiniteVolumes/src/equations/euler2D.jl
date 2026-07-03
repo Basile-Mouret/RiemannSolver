@@ -43,7 +43,7 @@ num_vars(::Euler2D) = 4
 # end
 
 
-function flux(eq::Euler2D, UL::AbstractVector{Float64}, UR::AbstractVector{Float64}, normal::NTuple{2, Float64})
+function flux(eq::Euler2D, UL::AbstractVector{Float64}, UR::AbstractVector{Float64}, normal::SVector{2, Float64})
 
     nx, ny = normal # cosθ, sinθ in Toro p.105
     # tangantial component
@@ -94,6 +94,30 @@ function compute_dt(mesh::Mesh2D, eq::Euler2D, U::Matrix{Float64}, CFL::Float64)
     return CFL * 2.0 * minimum(mesh.cell_measure[i] / mesh.cell_perimeters[i] for i in eachindex(mesh.cell_measure)) / s_max 
 end
 
+    dt_min = Inf
+    nvars = num_vars(eq)
+    
+    @inbounds for i in axes(U, 1)
+        # Extract cell state (avoiding allocations with SVector)
+        U_cell = SVector{nvars}(@view U[i, :])
+        rho, u, v, p = _cons_to_prim_euler_2D_ideal_gas(U_cell, eq.gamma)
+        
+        # Local max wave speed
+        a = sqrt(eq.gamma * p / rho)
+        s_local = sqrt(u*u + v*v) + a
+        
+        # Local characteristic length
+        char_length = 2.0 * mesh.cell_measure[i] / mesh.cell_perimeters[i]
+        
+        # Local time step limit
+        dt_local = char_length / s_local
+        
+        # Update global minimum
+        dt_min = min(dt_min, dt_local)
+    end
+    
+    return CFL * dt_min
+
 function output_fields(eq::Euler2D)
     γ = eq.gamma
     [
@@ -101,6 +125,7 @@ function output_fields(eq::Euler2D)
         OutputField("velocity", :vector, U -> SVector(U[2] / U[1], U[3] / U[1])),
         OutputField("pressure", :scalar, U -> (γ - 1.0) * (U[4] - 0.5 * (U[2]^2 + U[3]^2) / U[1])),
         OutputField("Energy",   :scalar, U -> U[4]),
+        OutputField("Momentum", :vector, U -> SVector(U[2], U[3])),
     ]
 end
 

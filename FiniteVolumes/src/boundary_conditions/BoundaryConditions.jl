@@ -6,7 +6,6 @@ function apply_ghost(::Outflow, u_interior::AbstractVector{Float64}, x, ::Float6
     return u_interior
 end
 
-
 # 1D boundary conditions
 
 abstract type AbstractBC1D <: AbstractBC end
