@@ -1,3 +1,4 @@
+
 """
 helper function to find pressure in the exact riemann solver
 """
@@ -118,21 +119,3 @@ function solve_riemann_exact(S::T, WL::AbstractVector{T}, WR::AbstractVector{T},
     end
 end
 
-"""
-Roe
-"""
-function solve_riemann_roe(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
-end
-
-"""
-HLL
-"""
-function solve_riemann_hll(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
-    
-end
-
-"""
-HLLC
-"""
-function solve_riemann_hllc(S::T, WL::Vector{T}, WR::Vector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
-end

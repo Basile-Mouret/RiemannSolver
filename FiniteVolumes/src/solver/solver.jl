@@ -11,7 +11,7 @@ function solve(
     CFL::Float64 = 0.9,
     output_dir::String = "out/simulation",
     dt_out::Float64 = final_time / 100,
-    dt_max::Float64 = -1.0,
+    dt_max::Float64 = Inf,
     Verbose::Bool=true,
 ) where {M<:AbstractMesh, E<:AbstractEquation, B, IC}
 
@@ -37,7 +37,7 @@ function solve(
         solve_start_time = time()
     end
     while t < final_time && step < max_time_steps
-        dt = max(dt_max, compute_dt(mesh, eq, values, CFL))
+        dt = min(dt_max, compute_dt(mesh, eq, values, CFL))
         if t + dt > final_time
             dt = final_time - t
         end
@@ -47,7 +47,6 @@ function solve(
         explicit_euler_step!(new_values, values, mesh, eq, boundary_conditions, dt, t)
         values .= new_values
 
-        maybe_write!(writer, values, t)
 
         if Verbose && step % (max_time_steps ÷ 100) == 1
             _print_sim_info(step, max_time_steps, t, final_time, solve_start_time)
@@ -55,6 +54,8 @@ function solve(
 
         t += dt
         step += 1
+
+        maybe_write!(writer, values, t)
     end
 
     close_writer!(writer)

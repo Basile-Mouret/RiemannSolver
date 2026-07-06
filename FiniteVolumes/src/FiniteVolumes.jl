@@ -1,37 +1,44 @@
 module FiniteVolumes
 using StaticArrays, LinearAlgebra
 
+# Boundary Conditions
 include("boundary_conditions/BoundaryConditions.jl")
 include("boundary_conditions/eulerbc.jl")
 
-
+# Meshes
 include("mesh/mesh.jl")
 include("mesh/mesh1D.jl")
 include("mesh/mesh2D.jl")
 
-include("RiemannSolver.jl")
-
 # Equations
 include("equations/Equations.jl")
+
+# numerical fluxes
+include("equations/exact_riemann_solver.jl")
+include("equations/godunov_flux.jl")
+include("equations/roe_flux.jl")
+
 # 1D Equations
 include("equations/burgers.jl")
 include("equations/advection.jl")
 include("equations/wave.jl")
 include("equations/euler.jl")
+
 # 2D Equations
 include("equations/advection2D.jl")
 include("equations/wave2D.jl")
 include("equations/euler2D.jl")
 
+# Solver Interface
 include("solver/timestepping.jl")
 include("solver/solver.jl")
 
+# Visualization
 include("visualization/vtkStreamWriter.jl")
 
 export AbstractMesh
 export Mesh1D, generate_1DMesh, quadrature_1D, compute_L2_1D
 export Mesh2D, load_mesh2D, face_outward_normal
-export solve_riemann_exact
 export AbstractEquation
 export AbstractEquation1D, Advection1D, Wave1D, Burgers1D, Euler1D
 export AbstractEquation2D, Advection2D, Wave2D, Euler2D
