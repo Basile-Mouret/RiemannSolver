@@ -2,3 +2,5 @@
 /FiniteVolumes/legacy
 /FiniteVolumes/media
 /FiniteVolumes/out
+
+*.mem

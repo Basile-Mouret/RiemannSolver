@@ -29,26 +29,35 @@ _vtk_2Dcelltype(n) = n == 3 ? VTKCellTypes.VTK_TRIANGLE :
 
 _vtk_cells(mesh::Mesh2D) = [MeshCell(_vtk_2Dcelltype(length(c)), c) for c in mesh.cells]
 
-# Write every field declared by `output_fields(eq)` as cell data on `vtk`.
-# `U` is the ncells × nvars matrix of conserved states.
+
+function _fill_scalar!(data::Vector{Float64}, extract::F, U::AbstractMatrix, ::Val{N}) where {F, N}
+    @inbounds for i in eachindex(data)
+        data[i] = extract(SVector{N}(@view U[i, :]))
+    end
+    return nothing
+end
+
+function _fill_vector!(data::Matrix{Float64}, extract::F, U::AbstractMatrix, ::Val{N}) where {F, N}
+    @inbounds for i in axes(data, 2)
+        v = extract(SVector{N}(@view U[i, :]))
+        @views data[:, i] .= v
+    end
+    return nothing
+end
+
 function _write_output_fields!(vtk, eq::AbstractEquation, U::AbstractMatrix)
     ncells = size(U, 1)
-    nvars  = num_vars(eq)
+    nv     = num_vars(eq)
+    nvars  = Val(nv)
     for f in output_fields(eq)
         if f.kind == :scalar
             data = Vector{Float64}(undef, ncells)
-            @inbounds for i in 1:ncells
-                data[i] = f.extract(SVector{nvars}(@view U[i, :]))
-            end
+            _fill_scalar!(data, f.extract, U, nvars)
             vtk[f.name, VTKCellData()] = data
         elseif f.kind == :vector
-            d = length(f.extract(SVector{nvars}(@view U[1, :])))
-            # WriteVTK wants components along the first dim: d × ncells
+            d = length(f.extract(SVector{nv}(@view U[1, :])))   # runtime probe, once per field
             data = Matrix{Float64}(undef, d, ncells)
-            @inbounds for i in 1:ncells
-                v = f.extract(SVector{nvars}(@view U[i, :]))
-                @views data[:, i] .= v
-            end
+            _fill_vector!(data, f.extract, U, nvars)
             vtk[f.name, VTKCellData()] = data
         else
             error("unknown output field kind :$(f.kind) for \"$(f.name)\"")
