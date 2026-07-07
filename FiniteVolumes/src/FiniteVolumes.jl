@@ -1,57 +1,74 @@
 module FiniteVolumes
 using StaticArrays, LinearAlgebra
 
+# Includes
+
 # Boundary Conditions
 include("boundary_conditions/BoundaryConditions.jl")
 include("boundary_conditions/eulerbc.jl")
+
 
 # Meshes
 include("mesh/mesh.jl")
 include("mesh/mesh1D.jl")
 include("mesh/mesh2D.jl")
 
+
 # Equations
 include("equations/Equations.jl")
 
-# numerical fluxes
-include("equations/exact_riemann_solver.jl")
-include("equations/godunov_flux.jl")
-include("equations/roe_flux.jl")
+# Linear advection equation
+include("equations/advection/advection.jl")
+include("equations/advection/advection2D.jl")
 
-# 1D Equations
-include("equations/burgers.jl")
-include("equations/advection.jl")
-include("equations/wave.jl")
-include("equations/euler.jl")
+# Wave equations
+include("equations/wave/wave.jl")
+include("equations/wave/wave2D.jl")
 
-# 2D Equations
-include("equations/advection2D.jl")
-include("equations/wave2D.jl")
-include("equations/euler2D.jl")
+# Burgers' equation 
+include("equations/burgers/burgers.jl")
+
+# Euler equations
+include("equations/euler/exact_riemann_solver.jl")
+include("equations/euler/godunov_flux.jl")
+include("equations/euler/roe_flux.jl")
+include("equations/euler/euler.jl")
+include("equations/euler/euler2D.jl")
+
 
 # Solver Interface
 include("solver/timestepping.jl")
 include("solver/solver.jl")
 
+
 # Visualization
 include("visualization/vtkStreamWriter.jl")
 
+# Exports
+
+#Meshes
 export AbstractMesh
 export Mesh1D, generate_1DMesh, quadrature_1D, compute_L2_1D
 export Mesh2D, load_mesh2D, face_outward_normal
+
+# Equations
 export AbstractEquation
 export AbstractEquation1D, Advection1D, Wave1D, Burgers1D, Euler1D
 export AbstractEquation2D, Advection2D, Wave2D, Euler2D
 export num_vars, max_wave_speed, flux, exact_solution!
 export OutputField, output_fields
 export entropy
+
+# Boundary conditions
 export AbstractBC, Outflow, apply_ghost
 export AbstractBC1D, Dirichlet, Reflecting, ReflectingEuler1D
 export AbstractBC2D, Dirichlet2D, Reflecting2D, ReflectingEuler2D
  
+# Solver
 export explicit_euler_step!
 export solve
-export VTKStreamWriter, write_frame!, maybe_write!, close_writer!
 
+# Output
+export VTKStreamWriter, write_frame!, maybe_write!, close_writer!
 
 end
