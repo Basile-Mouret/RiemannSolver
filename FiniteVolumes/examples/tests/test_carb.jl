@@ -1,13 +1,14 @@
 using FiniteVolumes
 using StaticArrays
+using BenchmarkTools
 
 mesh = load_mesh2D("meshes/aerosol/carbuncleQuad.msh")
 println(keys(mesh.boundary_tags))
 
 
 const γ = 1.4
-eq = Euler2D(γ, :Roe)
-const Mach = 10
+eq = Euler2D(γ, :Godunov)
+const Mach = 0.8
 
 
 const ρ = 1.0
@@ -34,13 +35,9 @@ max_time_steps = 100000
 final_time = 5.0
 CFL = 0.8
 
-if eq.numerical_flux == :Godunov
-    output_dir="out/carbuncle_Godunov_Mach$(replace(string(Mach),"."=>"_"))"
-elseif eq.numerical_flux == :Roe
-    output_dir="out/carbuncle_Roe_Mach$(replace(string(Mach),"."=>"_"))"
-end
 
-solve(mesh,
+
+@benchmark solve(mesh,
       eq,
       boundary_conditions,
       ic;
@@ -48,7 +45,7 @@ solve(mesh,
       CFL = CFL,
       final_time=final_time,
       dt_max = 0.05,
-      output_dir=output_dir
+      output_dir="out/test"
      )
 
 

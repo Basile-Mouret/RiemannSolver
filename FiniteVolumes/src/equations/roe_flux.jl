@@ -28,6 +28,9 @@ function get_roe_flux_3D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::
     w_l = rhow_l / rho_l
     p_l = (gamma-1) * (E_l - 0.5 * rho_l * (u_l*u_l + v_l*v_l + w_l*w_l))
     H_l = (E_l + p_l) / rho_l
+    a_l = sqrt(gamma * p_l / rho_l)
+    @assert p_l >= 0.
+    @assert H_l >= 0.
 
     rho_r, rhou_r, rhov_r, rhow_r, E_r = U_r
     u_r = rhou_r / rho_r
@@ -35,6 +38,9 @@ function get_roe_flux_3D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::
     w_r = rhow_r / rho_r
     p_r = (gamma-1) * (E_r - 0.5 * rho_r * (u_r*u_r + v_r*v_r + w_r*w_r))
     H_r = (E_r + p_r) / rho_r
+    a_r = sqrt(gamma * p_r / rho_r)
+    @assert p_r >= 0.
+    @assert H_r >= 0.
 
     sqrt_rho_l = sqrt(rho_l)
     sqrt_rho_r = sqrt(rho_r)
@@ -55,14 +61,13 @@ function get_roe_flux_3D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::
 
     # compute the averaged right eigenvectors
     K_tilde_1 = SVector(1.0, u_tilde - a_tilde, v_tilde, w_tilde, H_tilde - u_tilde * a_tilde)
-    K_tilde_2 = SVector(1, u_tilde, v_tilde, w_tilde, 0.5 * (u_tilde*u_tilde + v_tilde*v_tilde + w_tilde*w_tilde))
+    K_tilde_2 = SVector(1.0, u_tilde, v_tilde, w_tilde, 0.5 * (u_tilde*u_tilde + v_tilde*v_tilde + w_tilde*w_tilde))
     K_tilde_3 = SVector(0.0, 0.0, 1.0, 0.0, v_tilde)
     K_tilde_4 = SVector(0.0, 0.0, 0.0, 1.0, w_tilde)
     K_tilde_5 = SVector(1.0, u_tilde + a_tilde, v_tilde, w_tilde, H_tilde + u_tilde * a_tilde)
 
     # compute the wave strengths
     ΔU = U_r - U_l
-
     alpha_tilde_3 = (ΔU[3]) - v_tilde*(ΔU[1])
     alpha_tilde_4 = (ΔU[4]) - w_tilde*(ΔU[1])
     alpha_tilde_2 = ((gamma-1) / (a_tilde*a_tilde)) * (
@@ -74,10 +79,46 @@ function get_roe_flux_3D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::
     alpha_tilde_5 = ΔU[1] - (alpha_tilde_1 + alpha_tilde_2)
 
     # compute the intercell flux
-    
     F_l = SVector(rhou_l, rhou_l*u_l + p_l, rhou_l*v_l, rhou_l*w_l, u_l*(E_l + p_l))
     F_r = SVector(rhou_r, rhou_r*u_r + p_r, rhou_r*v_r, rhou_r*w_r, u_r*(E_r + p_r))
 
+    # Entropy Fix from Harten-Hyuman as described in Toro's book
+    # compute a* and u* (or approximations)
+    # we use the TRRS approximation
+    """z = 0.5*(gamma-1)/gamma
+    ps = ((a_l + a_r - 0.5*(gamma-1)*(u_r - u_l))/(a_l/(p_l^z) + a_r/(p_r^z)))^(1/z)
+    as_l = a_l*(ps/p_l)^z
+    us_l = u_l + 2/(gamma-1) * (a_l - as_l) 
+
+    as_r = a_r*(ps/p_r)^z
+    us_r = u_r + 2/(gamma-1) * (as_r - a_r) 
+
+    # Left Transonic rarefaction case
+    lam_1_l = u_l - a_l
+    lam_1_r = us_l - as_l
+    if  lam_1_l < 0 <  lam_1_r
+        lam_1_b = lam_1_l * (lam_1_r - lam_1)/(lam_1_r - lam_1_l)
+        return F_l + lam_1_b*alpha_tilde_1*K_tilde_1
+    end
+
+    # Right Transonic rarefaction wave
+    lam_5_l = us_r + as_r
+    lam_5_r = u_r + a_r
+    if  lam_5_l < 0 <  lam_5_r
+        lam_5_b = lam_5_r * (lam_5 - lam_5_l)/(lam_5_r - lam_5_l)
+        return F_r - lam_5_b*alpha_tilde_5*K_tilde_5
+    end
+    """    
+    # Hartem entropy fix from aerosol
+    dws = 0.2
+    if abs(lam_1) < dws
+        lam_1 = 0.5 * (lam_1*lam_1/dws + dws)
+    end
+    if abs(lam_5) < dws
+        lam_5 = 0.5 * (lam_5*lam_5/dws + dws)
+    end
+
+    # General case
     return 0.5*(F_l + F_r) - 0.5*(alpha_tilde_1*abs(lam_1)*K_tilde_1
                                         + alpha_tilde_2*abs(lam_2)*K_tilde_2
                                         + alpha_tilde_3*abs(lam_3)*K_tilde_3
