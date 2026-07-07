@@ -6,7 +6,7 @@ println(keys(mesh.boundary_tags))
 
 
 const γ = 1.4
-eq = Euler2D(γ, :exact)
+eq = Euler2D(γ, :Godunov)
 
 if length(ARGS) == 1
     const Mach = parse(Float64, ARGS[1])

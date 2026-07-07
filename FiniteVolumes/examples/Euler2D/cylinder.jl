@@ -6,7 +6,7 @@ println(keys(mesh.boundary_tags))
 
 
 const γ = 1.4
-eq = Euler2D(γ, :exact)
+eq = Euler2D(γ, :Godunov)
 const Mach = 4.0
 
 

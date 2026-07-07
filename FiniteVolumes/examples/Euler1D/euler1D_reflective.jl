@@ -7,7 +7,7 @@ N = 100
 gamma = 1.4
 
 mesh = generate_1DMesh(x0, x1, N, false)
-eq = Euler1D(gamma, :exact)
+eq = Euler1D(gamma, :Godunov)
 bcs = Dict("left" => ReflectingEuler1D(), "right" => ReflectingEuler1D())
 
 # Initial Conditions

@@ -7,7 +7,7 @@ N = 100
 gamma = 1.4
 
 mesh = generate_1DMesh(x0, x1, N, false)
-eq = Euler1D(gamma, :exact)
+eq = Euler1D(gamma, :Godunov)
 bcs = Dict("left" => Outflow(), "right" => Outflow())
 
 rhoL, uL, pL, rhoR, uR, pR = 1.0, -19.59745, 1000.0, 1.0, -19.59745, 0.01
