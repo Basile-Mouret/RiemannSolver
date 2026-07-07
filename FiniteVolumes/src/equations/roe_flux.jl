@@ -1,5 +1,5 @@
 """
-Original Roe flux for a 1D Riemann Problem
+Roe flux for a 1D Riemann Problem
 """
 function get_roe_flux_1D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::T) where {T<:Real}
     U_pad_l = SVector(U_l[1], U_l[2], 0, 0, U_l[3])
@@ -9,7 +9,7 @@ function get_roe_flux_1D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::
 end
 
 """
-Original Roe flux for a 2D Riemann Problem
+Roe flux for a 2D Riemann Problem
 """
 function get_roe_flux_2D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::T) where {T<:Real}
     U_pad_l = SVector(U_l[1], U_l[2], U_l[3], 0, U_l[4])
@@ -19,7 +19,7 @@ function get_roe_flux_2D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::
 end
 
 """
-Original Roe flux for a 3D Riemann Problem
+Roe flux for a 3D Riemann Problem
 """
 function get_roe_flux_3D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::T) where {T<:Real}
     rho_l, rhou_l, rhov_l, rhow_l, E_l = U_l
@@ -85,7 +85,7 @@ function get_roe_flux_3D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::
     # Entropy Fix from Harten-Hyuman as described in Toro's book
     # compute a* and u* (or approximations)
     # we use the TRRS approximation
-    """z = 0.5*(gamma-1)/gamma
+    z = 0.5*(gamma-1)/gamma
     ps = ((a_l + a_r - 0.5*(gamma-1)*(u_r - u_l))/(a_l/(p_l^z) + a_r/(p_r^z)))^(1/z)
     as_l = a_l*(ps/p_l)^z
     us_l = u_l + 2/(gamma-1) * (a_l - as_l) 
@@ -108,15 +108,15 @@ function get_roe_flux_3D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::
         lam_5_b = lam_5_r * (lam_5 - lam_5_l)/(lam_5_r - lam_5_l)
         return F_r - lam_5_b*alpha_tilde_5*K_tilde_5
     end
-    """    
-    # Hartem entropy fix from aerosol
-    dws = 0.2
-    if abs(lam_1) < dws
-        lam_1 = 0.5 * (lam_1*lam_1/dws + dws)
-    end
-    if abs(lam_5) < dws
-        lam_5 = 0.5 * (lam_5*lam_5/dws + dws)
-    end
+
+    # Hartem original entropy fix
+    # dws = 0.2
+    # if abs(lam_1) < dws
+    #     lam_1 = 0.5 * (lam_1*lam_1/dws + dws)
+    # end
+    # if abs(lam_5) < dws
+    #     lam_5 = 0.5 * (lam_5*lam_5/dws + dws)
+    # end
 
     # General case
     return 0.5*(F_l + F_r) - 0.5*(alpha_tilde_1*abs(lam_1)*K_tilde_1
