@@ -52,7 +52,7 @@ function _apply_boundary_faces!(
         nvars = num_vars(eq)
         if CL == 0
             uR = SVector{nvars}(@view cell_values[CR, :])
-            uL = apply_ghost(bc, uR, mesh.face_centers[face_id], t)
+            uL = apply_ghost(bc, uR, mesh.face_centers[face_id], t, mesh.face_normals[face_id])
             F = flux(eq, uL, uR, mesh.face_normals[face_id])
             coefR = dt * mesh.face_lengths[face_id] / mesh.cell_measure[CR]
             for v in 1:nvars
@@ -60,7 +60,7 @@ function _apply_boundary_faces!(
             end
         else
             uL = SVector{nvars}(@view cell_values[CL, :])
-            uR = apply_ghost(bc, uL, mesh.face_centers[face_id], t)
+            uR = apply_ghost(bc, uL, mesh.face_centers[face_id], t, mesh.face_normals[face_id])
             F = flux(eq, uL, uR, mesh.face_normals[face_id])
             coefL = dt * mesh.face_lengths[face_id] / mesh.cell_measure[CL]
             for v in 1:nvars
