@@ -1,6 +1,7 @@
-struct Euler2D <: AbstractEquation2D
+
+struct Euler2D{F <:AbstractIdealGasNumericalFlux} <: AbstractEquation2D
     gamma::Float64
-    numerical_flux::Symbol
+    numerical_flux::F
 end
 
 num_vars(::Euler2D) = 4
@@ -18,17 +19,7 @@ function flux(eq::Euler2D, U_l::AbstractVector{Float64}, U_r::AbstractVector{Flo
     U_hat_l = SVector(U_l[1], u_hat_l, v_hat_l, U_l[4])
     U_hat_r = SVector(U_r[1], u_hat_r, v_hat_r, U_r[4])
 
-    if eq.numerical_flux == :Godunov
-        F = get_godunov_flux_2D(U_hat_l, U_hat_r, eq.gamma)
-    elseif eq.numerical_flux == :HLL
-        F = get_hllc_flux_2D(U_hat_l, U_hat_r, eq.gamma)
-    elseif eq.numerical_flux == :HLLC
-        F = get_hllc_flux_2D(U_hat_l, U_hat_r, eq.gamma)
-    elseif eq.numerical_flux == :Roe
-        F = get_roe_flux_2D(U_hat_l, U_hat_r, eq.gamma)
-    else
-        error("This solver is not implemented")
-    end
+    F = get_flux_2D(eq.numerical_flux, U_hat_l, U_hat_r, eq.gamma)
 
     return SVector(
                    F[1],

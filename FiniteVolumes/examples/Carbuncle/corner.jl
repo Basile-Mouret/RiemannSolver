@@ -4,9 +4,9 @@ using StaticArrays
 mesh = load_mesh2D("meshes/Euler2D/Carbuncle/corner.msh")
 println(keys(mesh.boundary_tags))
 
-
+num_flux = IdealGasRoe(:None)
 const γ = 1.4
-eq = Euler2D(γ, :Godunov)
+eq = Euler2D(γ, num_flux)
 const Mr = 0.0
 const Ms = 5.09
 

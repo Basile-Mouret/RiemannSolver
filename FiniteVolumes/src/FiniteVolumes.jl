@@ -29,7 +29,10 @@ include("equations/wave/wave2D.jl")
 include("equations/burgers/burgers.jl")
 
 # Euler equations
+include("equations/euler/helpers_euler.jl")
 include("equations/euler/riemann_solvers/exact_riemann_solver.jl")
+# Numerical fluxes for IdealGas
+include("equations/euler/numerical_fluxes/IdealGasesNumericalFlux.jl")
 include("equations/euler/numerical_fluxes/godunov_flux.jl")
 include("equations/euler/numerical_fluxes/hll_flux.jl")
 include("equations/euler/numerical_fluxes/hllc_flux.jl")
@@ -63,6 +66,9 @@ export entropy
 
 # Riemann Solvers
 export get_star_values, solve_riemann_exact
+
+# Numerical Fluxes
+export AbstractIdealGasNumericalFlux, IdealGasGodunov, IdealGasRoe, IdealGasHLL, IdealGasHLLC, get_flux_2D, get_flux_1D
 
 # Boundary conditions
 export AbstractBC, Outflow, apply_ghost

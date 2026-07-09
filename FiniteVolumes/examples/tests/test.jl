@@ -1,37 +1,47 @@
 using FiniteVolumes
 using StaticArrays
-using BenchmarkTools
 
-x0, x1 = 0.0, 1.0
-N = 100
+mesh = load_mesh2D("meshes/aerosol/carbuncleQuad.msh")
+println(keys(mesh.boundary_tags))
 
-gamma = 1.4
 
-mesh = generate_1DMesh(x0, x1, N, false)
-eq = Euler1D(gamma, :Godunov)
-bcs = Dict("left" => Outflow(), "right" => Outflow())
+num_flux = IdealGasHLL()
+const γ = 1.4
+eq = Euler2D(γ, num_flux)
+const Mach = 10.0
 
-rhoL, uL, pL, rhoR, uR, pR = 1.0, 0.75, 1.0, 0.125, 0.0, 0.1
-xm = 0.3
 
-# Initial Conditions
-rho0(x) = x <= xm ? rhoL : rhoR
-u0(x)   = x <= xm ? uL : uR
-p0(x)   = x <= xm ? pL : pR
+const ρ_inf = 1.2
+const p_inf = 1e5
+const a_inf = sqrt(γ*p_inf/ρ_inf)
+const u_inf = Mach * a_inf
+const v_inf = 0.0
+const E_inf = p_inf/(γ-1.0) + 0.5*ρ_inf*(u_inf^2+v_inf^2)
 
 function ic(x)
-    rho = rho0(x)
-    u = u0(x)
-    p = p0(x)
+    return SVector(ρ_inf, ρ_inf*u_inf, ρ_inf*v_inf, E_inf)
+end;
 
-    rhou = rho * u
-    E = p / (gamma - 1.0) + 0.5 * rho * u^2
+const W_inflow = SVector(ρ_inf, ρ_inf*u_inf, ρ_inf*v_inf, E_inf)
+dirichlet_inflow = Dirichlet2D((x,t) -> W_inflow)
 
-    return SVector(rho, rhou, E)
-end
+boundary_conditions = Dict{String, Union{Outflow, typeof(dirichlet_inflow), ReflectingEuler2D}}(
+    "Inlet"          => dirichlet_inflow,
+    "Outlet"       => Outflow(),
+    "Cylinder"       => ReflectingEuler2D(),
+)
 
-max_time_steps = 100
-final_time = 100.0
+max_time_steps = 10000
+final_time = 0.001
 CFL = 0.8
 
-@benchmark solve(mesh, eq, bcs, ic; max_time_steps = max_time_steps, CFL = CFL, final_time = final_time, output_dir = "out/test")
+solve(mesh,
+      eq,
+      boundary_conditions,
+      ic;
+      max_time_steps = max_time_steps,
+      CFL = CFL,
+      final_time=final_time,
+      output_dir="out/ringleb"
+     )
+

@@ -1,27 +1,31 @@
+struct IdealGasRoe <: AbstractIdealGasNumericalFlux
+    entropy_fix::Symbol
+end
+
 """
 Roe flux for a 1D Riemann Problem
 """
-function get_roe_flux_1D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::T) where {T<:Real}
+function get_flux_1D(numerical_flux::IdealGasRoe, U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::T) where {T<:Real}
     U_pad_l = SVector(U_l[1], U_l[2], 0, 0, U_l[3])
     U_pad_r = SVector(U_r[1], U_r[2], 0, 0, U_r[3])
-    F = get_roe_flux_3D(U_pad_l, U_pad_r, gamma)
+    F = get_flux_3D(numerical_flux, U_pad_l, U_pad_r, gamma)
     return SVector(F[1], F[2], F[5])
 end
 
 """
 Roe flux for a 2D Riemann Problem
 """
-function get_roe_flux_2D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::T) where {T<:Real}
+function get_flux_2D(numerical_flux::IdealGasRoe, U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::T) where {T<:Real}
     U_pad_l = SVector(U_l[1], U_l[2], U_l[3], 0, U_l[4])
     U_pad_r = SVector(U_r[1], U_r[2], U_r[3], 0, U_r[4])
-    F = get_roe_flux_3D(U_pad_l, U_pad_r, gamma)
+    F = get_flux_3D(numerical_flux,  U_pad_l, U_pad_r, gamma)
     return SVector(F[1], F[2], F[3], F[5])
 end
 
 """
 Roe flux for a 3D Riemann Problem
 """
-function get_roe_flux_3D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::T) where {T<:Real}
+function get_flux_3D(numerical_flux::IdealGasRoe, U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::T) where {T<:Real}
     rho_l, rhou_l, rhov_l, rhow_l, E_l = U_l
     u_l = rhou_l / rho_l
     v_l = rhov_l / rho_l
