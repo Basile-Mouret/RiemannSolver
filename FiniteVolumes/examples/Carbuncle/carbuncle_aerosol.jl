@@ -38,6 +38,10 @@ if eq.numerical_flux == :Godunov
     output_dir="out/carbuncle_Godunov_Mach$(replace(string(Mach),"."=>"_"))"
 elseif eq.numerical_flux == :Roe
     output_dir="out/carbuncle_Roe_Mach$(replace(string(Mach),"."=>"_"))"
+elseif eq.numerical_flux == :HLL
+    output_dir="out/carbuncle_HLL_Mach$(replace(string(Mach),"."=>"_"))"
+elseif eq.numerical_flux == :HLLC
+    output_dir="out/carbuncle_HLLC_Mach$(replace(string(Mach),"."=>"_"))"
 end
 
 solve(mesh,

@@ -85,38 +85,38 @@ function get_roe_flux_3D(U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::
     # Entropy Fix from Harten-Hyuman as described in Toro's book
     # compute a* and u* (or approximations)
     # we use the TRRS approximation
-    z = 0.5*(gamma-1)/gamma
-    ps = ((a_l + a_r - 0.5*(gamma-1)*(u_r - u_l))/(a_l/(p_l^z) + a_r/(p_r^z)))^(1/z)
-    as_l = a_l*(ps/p_l)^z
-    us_l = u_l + 2/(gamma-1) * (a_l - as_l) 
-
-    as_r = a_r*(ps/p_r)^z
-    us_r = u_r + 2/(gamma-1) * (as_r - a_r) 
-
-    # Left Transonic rarefaction case
-    lam_1_l = u_l - a_l
-    lam_1_r = us_l - as_l
-    if  lam_1_l < 0 <  lam_1_r
-        lam_1_b = lam_1_l * (lam_1_r - lam_1)/(lam_1_r - lam_1_l)
-        return F_l + lam_1_b*alpha_tilde_1*K_tilde_1
-    end
-
-    # Right Transonic rarefaction wave
-    lam_5_l = us_r + as_r
-    lam_5_r = u_r + a_r
-    if  lam_5_l < 0 <  lam_5_r
-        lam_5_b = lam_5_r * (lam_5 - lam_5_l)/(lam_5_r - lam_5_l)
-        return F_r - lam_5_b*alpha_tilde_5*K_tilde_5
-    end
+    # z = 0.5*(gamma-1)/gamma
+    # ps = ((a_l + a_r - 0.5*(gamma-1)*(u_r - u_l))/(a_l/(p_l^z) + a_r/(p_r^z)))^(1/z)
+    # as_l = a_l*(ps/p_l)^z
+    # us_l = u_l + 2/(gamma-1) * (a_l - as_l) 
+    #
+    # as_r = a_r*(ps/p_r)^z
+    # us_r = u_r + 2/(gamma-1) * (as_r - a_r) 
+    #
+    # # Left Transonic rarefaction case
+    # lam_1_l = u_l - a_l
+    # lam_1_r = us_l - as_l
+    # if  lam_1_l < 0 <  lam_1_r
+    #     lam_1_b = lam_1_l * (lam_1_r - lam_1)/(lam_1_r - lam_1_l)
+    #     return F_l + lam_1_b*alpha_tilde_1*K_tilde_1
+    # end
+    #
+    # # Right Transonic rarefaction wave
+    # lam_5_l = us_r + as_r
+    # lam_5_r = u_r + a_r
+    # if  lam_5_l < 0 <  lam_5_r
+    #     lam_5_b = lam_5_r * (lam_5 - lam_5_l)/(lam_5_r - lam_5_l)
+    #     return F_r - lam_5_b*alpha_tilde_5*K_tilde_5
+    # end
 
     # Hartem original entropy fix
-    # dws = 0.2
-    # if abs(lam_1) < dws
-    #     lam_1 = 0.5 * (lam_1*lam_1/dws + dws)
-    # end
-    # if abs(lam_5) < dws
-    #     lam_5 = 0.5 * (lam_5*lam_5/dws + dws)
-    # end
+    dws = 0.2
+    if abs(lam_1) < dws
+        lam_1 = 0.5 * (lam_1*lam_1/dws + dws)
+    end
+    if abs(lam_5) < dws
+        lam_5 = 0.5 * (lam_5*lam_5/dws + dws)
+    end
 
     # General case
     return 0.5*(F_l + F_r) - 0.5*(alpha_tilde_1*abs(lam_1)*K_tilde_1

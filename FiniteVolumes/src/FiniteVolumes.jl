@@ -29,9 +29,11 @@ include("equations/wave/wave2D.jl")
 include("equations/burgers/burgers.jl")
 
 # Euler equations
-include("equations/euler/exact_riemann_solver.jl")
-include("equations/euler/godunov_flux.jl")
-include("equations/euler/roe_flux.jl")
+include("equations/euler/riemann_solvers/exact_riemann_solver.jl")
+include("equations/euler/numerical_fluxes/godunov_flux.jl")
+include("equations/euler/numerical_fluxes/hll_flux.jl")
+include("equations/euler/numerical_fluxes/hllc_flux.jl")
+include("equations/euler/numerical_fluxes/roe_flux.jl")
 include("equations/euler/euler.jl")
 include("equations/euler/euler2D.jl")
 
@@ -58,6 +60,9 @@ export AbstractEquation2D, Advection2D, Wave2D, Euler2D
 export num_vars, max_wave_speed, flux, exact_solution!
 export OutputField, output_fields
 export entropy
+
+# Riemann Solvers
+export get_star_values, solve_riemann_exact
 
 # Boundary conditions
 export AbstractBC, Outflow, apply_ghost

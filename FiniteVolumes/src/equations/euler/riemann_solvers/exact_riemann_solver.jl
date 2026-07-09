@@ -1,4 +1,3 @@
-
 """
 helper function to find pressure in the exact riemann solver
 """
@@ -11,13 +10,13 @@ function _newton_raphson(f, df, p0; max_it::Int = 10, TOL::Float64 = 10^(-6))
         end
         p0 = p
     end
-    return p
+    error("Pressure didn't converge.")
 end
 
 """
-Exact Riemann Solver for the 1D Euler system
+Return Star Values for a given Riemann problem
 """
-function solve_riemann_exact(S::T, WL::AbstractVector{T}, WR::AbstractVector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
+function get_star_values(WL::AbstractVector{T}, WR::AbstractVector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
     rhoL, uL, pL = WL
     rhoR, uR, pR = WR
 
@@ -55,22 +54,46 @@ function solve_riemann_exact(S::T, WL::AbstractVector{T}, WR::AbstractVector{T},
     
 
     # Newton's method to find p*
-    pstar = _newton_raphson(f, df, p0)
+    pstar = _newton_raphson(f, df, p0, max_it=10, TOL=TOL)
 
     # compute u*
     ustar = 0.5*(uL+uR+fR(pstar)-fL(pstar)) 
-    
 
+    if pstar > pL
+        rhostarL = rhoL * (pstar/pL + (gamma-1.0)/(gamma+1.0))/((gamma-1.0)/(gamma+1.0)* pstar/pL + 1.0)
+    else
+        rhostarL = rhoL*(pstar/pL)^(1.0/gamma) 
+    end
+
+    if pstar>pR
+        rhostarR = rhoR * (pstar/pR + (gamma-1.0)/(gamma+1.0))/((gamma-1.0)/(gamma+1.0)* pstar/pR + 1.0)
+    else
+        rhostarR = rhoR*(pstar/pR)^(1.0/gamma) 
+    end
+
+    return SVector(pstar, ustar, rhostarL, rhostarR)
+end
+
+"""
+Exact Riemann Solver for the 1D Euler system
+"""
+function solve_riemann_exact(Xi::T, WL::AbstractVector{T}, WR::AbstractVector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
+    rhoL, uL, pL = WL
+    rhoR, uR, pR = WR
+
+    aL = sqrt(gamma*pL/rhoL)
+    aR = sqrt(gamma*pR/rhoR)
+
+    pstar, ustar, rhostarL, rhostarR = get_star_values(WL, WR, gamma, TOL=TOL)
 
     # find right case : 
-    if S < ustar
+    if Xi < ustar
         # we are on the left of the contact wave
         if pstar>pL     # left shock wave
             SL = uL - aL* sqrt(((gamma+1.0)/(2*gamma) * pstar/pL + (gamma-1.0)/(2.0*gamma)))
-            if S < SL
+            if Xi < SL
                 return WL
             else
-                rhostarL = rhoL * (pstar/pL + (gamma-1.0)/(gamma+1.0))/((gamma-1.0)/(gamma+1.0)* pstar/pL + 1.0)
                 return SVector(rhostarL, ustar, pstar)
             end
 
@@ -78,15 +101,14 @@ function solve_riemann_exact(S::T, WL::AbstractVector{T}, WR::AbstractVector{T},
             SHL = uL - aL
             astarL = aL*(pstar/pL)^((gamma-1.0)/(2.0*gamma))
             STL = ustar - astarL
-            if S<SHL
+            if Xi<SHL
                 return WL
-            elseif S>STL
-                rhostarL = rhoL*(pstar/pL)^(1.0/gamma) 
+            elseif Xi>STL
                 return SVector(rhostarL, ustar, pstar)
             else
-                rhoLfan = rhoL * ((2.0/(gamma+1.0) + (gamma-1.0)/((gamma+1.0)*aL) * (uL - S))^(2.0/(gamma-1.0)) )
-                uLfan = 2.0/(gamma+1.0) * (aL + 0.5*(gamma-1.0)*uL + S)
-                pLfan = pL * ((2.0/(gamma+1.0) + (gamma-1.0)/((gamma+1.0)*aL) * (uL - S))^(2.0*gamma/(gamma-1.0)))
+                rhoLfan = rhoL * ((2.0/(gamma+1.0) + (gamma-1.0)/((gamma+1.0)*aL) * (uL - Xi))^(2.0/(gamma-1.0)) )
+                uLfan = 2.0/(gamma+1.0) * (aL + 0.5*(gamma-1.0)*uL + Xi)
+                pLfan = pL * ((2.0/(gamma+1.0) + (gamma-1.0)/((gamma+1.0)*aL) * (uL - Xi))^(2.0*gamma/(gamma-1.0)))
                 return SVector(rhoLfan, uLfan, pLfan)
             end
         end
@@ -94,25 +116,23 @@ function solve_riemann_exact(S::T, WL::AbstractVector{T}, WR::AbstractVector{T},
         # we are on the right of the contact wave
         if pstar>pR     # right shock wave
             SR = uR + aR* sqrt(((gamma+1.0)/(2*gamma) * pstar/pR + (gamma-1.0)/(2.0*gamma)))
-            if S>SR
+            if Xi>SR
                 return WR
             else
-                rhostarR = rhoR * (pstar/pR + (gamma-1.0)/(gamma+1.0))/((gamma-1.0)/(gamma+1.0)* pstar/pR + 1.0)
                 return SVector(rhostarR, ustar, pstar)
             end
         else            # left fan
             SHR = uR + aR
             astarR = aR*(pstar/pR)^((gamma-1.0)/(2.0*gamma))
             STR = ustar + astarR
-            if S>SHR
+            if Xi>SHR
                 return WR
-            elseif S<STR
-                rhostarR = rhoR*(pstar/pR)^(1.0/gamma) 
+            elseif Xi<STR
                 return SVector(rhostarR, ustar, pstar)
             else
-                rhoRfan = rhoR * ((2.0/(gamma+1.0) - (gamma-1.0)/((gamma+1.0)*aR) * (uR - S))^(2.0/(gamma-1.0)) )
-                uRfan = 2.0/(gamma+1.0) * (-aR + 0.5*(gamma-1.0)*uR + S)
-                pRfan = pR * ((2.0/(gamma+1.0) - (gamma-1.0)/((gamma+1.0)*aR) * (uR - S))^(2.0*gamma/(gamma-1.0)))
+                rhoRfan = rhoR * ((2.0/(gamma+1.0) - (gamma-1.0)/((gamma+1.0)*aR) * (uR - Xi))^(2.0/(gamma-1.0)) )
+                uRfan = 2.0/(gamma+1.0) * (-aR + 0.5*(gamma-1.0)*uR + Xi)
+                pRfan = pR * ((2.0/(gamma+1.0) - (gamma-1.0)/((gamma+1.0)*aR) * (uR - Xi))^(2.0*gamma/(gamma-1.0)))
                 return SVector(rhoRfan, uRfan, pRfan)
             end
         end

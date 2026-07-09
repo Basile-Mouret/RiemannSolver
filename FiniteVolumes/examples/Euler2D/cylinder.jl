@@ -6,8 +6,8 @@ println(keys(mesh.boundary_tags))
 
 
 const γ = 1.4
-eq = Euler2D(γ, :Godunov)
-const Mach = 4.0
+eq = Euler2D(γ, :HLLC)
+const Mach = 3.0
 
 
 const ρ_inf = 1.2
@@ -32,10 +32,27 @@ boundary_conditions = Dict{String, Union{Outflow, typeof(dirichlet_inflow), Refl
     "Cylinder"     => ReflectingEuler2D(),
 )
 
-max_time_steps = 100000
-final_time = 0.01
+max_time_steps = 10000
+final_time = 0.001
 CFL = 0.8
 
+if eq.numerical_flux == :Godunov
+    output_dir="out/comparative_cylinder_Mach3/Godunov"
+elseif eq.numerical_flux == :Roe
+    output_dir="out/comparative_cylinder_Mach3/Roe"
+elseif eq.numerical_flux == :HLL
+    output_dir="out/comparative_cylinder_Mach3/HLL"
+elseif eq.numerical_flux == :HLLC
+    output_dir="out/comparative_cylinder_Mach3/HLLC"
+end
 
-solve(mesh, eq, boundary_conditions, ic; max_time_steps = max_time_steps, CFL = CFL, final_time=final_time, output_dir="out/cylinder_Mach$(replace(string(Mach),"."=>"_"))")
+solve(mesh,
+      eq,
+      boundary_conditions,
+      ic;
+      max_time_steps = max_time_steps,
+      CFL = CFL,
+      final_time=final_time,
+      output_dir=output_dir
+     )
 

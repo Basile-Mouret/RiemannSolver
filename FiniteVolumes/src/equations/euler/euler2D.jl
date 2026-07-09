@@ -20,6 +20,10 @@ function flux(eq::Euler2D, U_l::AbstractVector{Float64}, U_r::AbstractVector{Flo
 
     if eq.numerical_flux == :Godunov
         F = get_godunov_flux_2D(U_hat_l, U_hat_r, eq.gamma)
+    elseif eq.numerical_flux == :HLL
+        F = get_hllc_flux_2D(U_hat_l, U_hat_r, eq.gamma)
+    elseif eq.numerical_flux == :HLLC
+        F = get_hllc_flux_2D(U_hat_l, U_hat_r, eq.gamma)
     elseif eq.numerical_flux == :Roe
         F = get_roe_flux_2D(U_hat_l, U_hat_r, eq.gamma)
     else
