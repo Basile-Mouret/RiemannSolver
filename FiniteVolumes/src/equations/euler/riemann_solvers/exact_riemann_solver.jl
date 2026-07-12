@@ -1,11 +1,11 @@
 """
 helper function to find pressure in the exact riemann solver
 """
-function _newton_raphson(f, df, p0; max_it::Int = 10, TOL::Float64 = 10^(-6))
+function _newton_raphson(f, df, p0; max_it_p::Int = 10, p_tol::Float64 = 1e-6)
     p = p0
-    for _ in 1:max_it
+    for _ in 1:max_it_p
         p -= f(p)/df(p) 
-        if 2.0*abs(p-p0)/(p+p0) < TOL
+        if 2.0*abs(p-p0)/(p+p0) < p_tol
             return p
         end
         p0 = p
@@ -16,7 +16,7 @@ end
 """
 Return Star Values for a given Riemann problem
 """
-function get_star_values(WL::AbstractVector{T}, WR::AbstractVector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
+function get_star_values(WL::AbstractVector{T}, WR::AbstractVector{T}, gamma::T; max_it_p::Int=10, p_tol::T=1e-6 ) where {T<:Real}
     rhoL, uL, pL = WL
     rhoR, uR, pR = WR
 
@@ -44,17 +44,17 @@ function get_star_values(WL::AbstractVector{T}, WR::AbstractVector{T}, gamma::T,
     # choose p0, the starting guess
     # from Toro, we choose the two shock approximation as it seemed to give the best results overall
     pPV = 0.5 * (pL + pR) - 0.125 * (uR - uL) * (rhoL + rhoR) * (aL + aR)
-    phat = max(TOL, pPV)
+    phat = max(p_tol, pPV)
 
     gL = sqrt(AL / (phat + BL))
     gR = sqrt(AR / (phat + BR))
     pTS = (gL*pL + gR*pR - (uR-uL)) / (gL + gR)
 
-    p0 = max(TOL, pTS)
+    p0 = max(p_tol, pTS)
     
 
     # Newton's method to find p*
-    pstar = _newton_raphson(f, df, p0, max_it=10, TOL=TOL)
+    pstar = _newton_raphson(f, df, p0, max_it_p=max_it_p, p_tol=p_tol)
 
     # compute u*
     ustar = 0.5*(uL+uR+fR(pstar)-fL(pstar)) 
@@ -77,14 +77,14 @@ end
 """
 Exact Riemann Solver for the 1D Euler system
 """
-function solve_riemann_exact(Xi::T, WL::AbstractVector{T}, WR::AbstractVector{T}, gamma::T, ; TOL::T=1e-6) where {T<:Real}
+function solve_riemann_exact(Xi::T, WL::AbstractVector{T}, WR::AbstractVector{T}, gamma::T; max_it_p::Int=10, p_tol::T=1e-6) where {T<:Real}
     rhoL, uL, pL = WL
     rhoR, uR, pR = WR
 
     aL = sqrt(gamma*pL/rhoL)
     aR = sqrt(gamma*pR/rhoR)
 
-    pstar, ustar, rhostarL, rhostarR = get_star_values(WL, WR, gamma, TOL=TOL)
+    pstar, ustar, rhostarL, rhostarR = get_star_values(WL, WR, gamma, max_it_p=max_it_p, p_tol=p_tol)
 
     # find right case : 
     if Xi < ustar

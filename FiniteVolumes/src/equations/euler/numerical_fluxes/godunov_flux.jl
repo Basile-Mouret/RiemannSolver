@@ -1,8 +1,10 @@
 struct IdealGasGodunov <: AbstractIdealGasNumericalFlux
     # initial_p_guess::Symbol
-    # max_it_newton::Int
-    
+    max_it_newton::Int
+    pressure_tol::Float64
 end
+
+IdealGasGodunov() = IdealGasGodunov(10, 1e-6)
 
 function get_flux_1D(numerical_flux::IdealGasGodunov, U_l::AbstractVector{T}, U_r::AbstractVector{T}, gamma::T) where {T<:Real}
         # get the primitive variables
@@ -27,7 +29,10 @@ function get_flux_2D(numerical_flux::IdealGasGodunov,U_l::AbstractVector{T}, U_r
         rho, u_h, p = solve_riemann_exact(0.0,
                                           SVector(W_l[1], W_l[2], W_l[4]),
                                           SVector(W_r[1], W_r[2], W_r[4]),
-                                          gamma)
+                                          gamma,
+                                          p_tol=numerical_flux.pressure_tol,
+                                          max_it_p = numerical_flux.max_it_newton
+                                         )
         # get tangent component from the orientation of the contact wave
         v_h = u_h>0 ? W_l[3] : W_r[3]
         E = p / (gamma - 1.0) + 0.5*rho*(u_h*u_h + v_h*v_h)

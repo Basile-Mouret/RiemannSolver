@@ -13,6 +13,7 @@ function solve(
     dt_out::Float64 = final_time / 100,
     dt_max::Float64 = Inf,
     Verbose::Bool=true,
+    n_info::Int=100
 ) where {M<:AbstractMesh, E<:AbstractEquation, B, IC}
 
     nvars = num_vars(eq)
@@ -48,7 +49,7 @@ function solve(
         values .= new_values
 
 
-        if Verbose && step % (max_time_steps ÷ 100) == 1
+        if Verbose && step % (max_time_steps ÷ n_info) == 1
             _print_sim_info(step, max_time_steps, t, final_time, solve_start_time)
         end
 

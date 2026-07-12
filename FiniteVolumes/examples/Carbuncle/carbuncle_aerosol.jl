@@ -2,20 +2,19 @@ using FiniteVolumes
 using StaticArrays
 
 mesh = load_mesh2D("meshes/aerosol/carbuncleQuad.msh")
-println(keys(mesh.boundary_tags))
-
+# println(keys(mesh.boundary_tags))
 
 const γ = 1.4
-eq = Euler2D(γ, :Roe)
 const Mach = 10
-
-
 const ρ = 1.0
 const u = 1.0 
 const v = 0.0
 const a = u/Mach
 const p = ρ  * a * a / γ
-const E = p / (γ - 1.0) + 0.5 * ρ * (u^2 + v^2)
+const E = p / (γ-1.0) + 0.5 * ρ * (u^2 + v^2)
+
+num_flux = IdealGasRoe(:Harten_Hyman)
+eq = Euler2D(γ, num_flux)
 
 function ic(x)
     return SVector(ρ, ρ*u, ρ*v, E)
@@ -34,15 +33,7 @@ max_time_steps = 100000
 final_time = 5.0
 CFL = 0.8
 
-if eq.numerical_flux == :Godunov
-    output_dir="out/carbuncle_Godunov_Mach$(replace(string(Mach),"."=>"_"))"
-elseif eq.numerical_flux == :Roe
-    output_dir="out/carbuncle_Roe_Mach$(replace(string(Mach),"."=>"_"))"
-elseif eq.numerical_flux == :HLL
-    output_dir="out/carbuncle_HLL_Mach$(replace(string(Mach),"."=>"_"))"
-elseif eq.numerical_flux == :HLLC
-    output_dir="out/carbuncle_HLLC_Mach$(replace(string(Mach),"."=>"_"))"
-end
+output_dir="out/carbuncle_aerosol"
 
 solve(mesh,
       eq,

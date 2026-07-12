@@ -4,12 +4,10 @@ using StaticArrays
 mesh = load_mesh2D("meshes/aerosol/carbuncleQuad.msh")
 println(keys(mesh.boundary_tags))
 
-
-num_flux = IdealGasHLL()
+num_flux = IdealGasRoe(:Harten)
 const γ = 1.4
 eq = Euler2D(γ, num_flux)
 const Mach = 10.0
-
 
 const ρ_inf = 1.2
 const p_inf = 1e5
@@ -42,6 +40,6 @@ solve(mesh,
       max_time_steps = max_time_steps,
       CFL = CFL,
       final_time=final_time,
-      output_dir="out/ringleb"
+      output_dir="out/test"
      )
 

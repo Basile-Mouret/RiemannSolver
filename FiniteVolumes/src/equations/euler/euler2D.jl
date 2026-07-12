@@ -1,4 +1,3 @@
-
 struct Euler2D{F <:AbstractIdealGasNumericalFlux} <: AbstractEquation2D
     gamma::Float64
     numerical_flux::F
@@ -30,15 +29,17 @@ function flux(eq::Euler2D, U_l::AbstractVector{Float64}, U_r::AbstractVector{Flo
 end
 
 function compute_dt(mesh::Mesh2D, eq::Euler2D, U::Matrix{Float64}, CFL::Float64)::Float64
-    # not optimal, I could try to efficiently compute minimum(cell_meas/(s_max_into_cell * cell_perimeter))
-    # this way I can have finer mesh at low speed locations
-
     dt_min = Inf
     nvars = num_vars(eq)
 
     for i in axes(U, 1)
         U_cell = SVector{nvars}(@view U[i, :])
         rho, u, v, p = _cons_to_prim_euler_ideal_gas(U_cell, eq.gamma, :two)
+
+        if p <= 0 || rho <= 0
+            x,y = mesh.cell_centers[i]
+            error("Non-admissible state at step $step, cell $i @ ($x,$y): ρ=$rho, p=$p")
+        end
 
         a = sqrt(eq.gamma * p / rho) 
         s_local = sqrt(u*u + v*v) + a

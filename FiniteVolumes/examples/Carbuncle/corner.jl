@@ -4,9 +4,7 @@ using StaticArrays
 mesh = load_mesh2D("meshes/Euler2D/Carbuncle/corner.msh")
 println(keys(mesh.boundary_tags))
 
-num_flux = IdealGasRoe(:None)
 const γ = 1.4
-eq = Euler2D(γ, num_flux)
 const Mr = 0.0
 const Ms = 5.09
 
@@ -14,7 +12,7 @@ const Ms = 5.09
 const ρr = 1.2
 const pr = 1e5
 const ar = sqrt(γ*pr/ρr)
-const ur = 0.0
+const ur = Mr*ar
 const vr = 0.0
 const Er = pr/(γ-1.0) + 0.5*ρr*(ur^2+vr^2)
 
@@ -26,7 +24,10 @@ const us = (1- ρr/ρs) * S + ur * ρr/ρs
 const vs = vr
 const Es = ps/(γ-1.0) + 0.5*ρs*(us^2+vs^2)
 
-const xs = 0.5
+num_flux = IdealGasHLLC()
+eq = Euler2D(γ, num_flux)
+
+const xs = 0.5 # position of the shock
 function ic(x)
     if x[1] < xs
         return SVector(ρs, ρs*us, ρs*vs, Es)
@@ -45,21 +46,14 @@ boundary_conditions = Dict{String, Union{Outflow, typeof(dirichlet_inflow), Refl
     "Left"       => dirichlet_inflow,
     "Object"     => ReflectingEuler2D(),
 )
+println(boundary_conditions)
 
-max_time_steps = 100000
+max_time_steps = 1
 final_time = 0.01
-CFL = 0.8
+CFL = 0.5
 
-if eq.numerical_flux == :Godunov
-    flux_str = "Godunov"
-elseif eq.numerical_flux == :Roe
-    flux_str = "Roe"
-elseif eq.numerical_flux == :HLL
-    flux_str = "HLL"
-elseif eq.numerical_flux == :HLLC
-    flux_str = "HLLC"
-end
-output_dir="out/Carbuncle/Corner/$(flux_str)_Mach$(replace(string(Ms-Ms),"."=>"_"))"
+output_dir="out/Carbuncle/Corner/HLLC"
+n_info = 1
 
 
 solve(mesh,
@@ -69,7 +63,8 @@ solve(mesh,
       max_time_steps = max_time_steps,
       CFL = CFL,
       final_time=final_time,
-      output_dir=output_dir
+      output_dir=output_dir,
+      n_info = n_info
      )
 
 
