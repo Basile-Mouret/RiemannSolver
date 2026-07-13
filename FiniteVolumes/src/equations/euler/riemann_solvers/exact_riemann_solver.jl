@@ -10,8 +10,7 @@ function _newton_raphson(f, df, p0; max_it_p::Int = 10, p_tol::T = T(1e-6)) wher
         end
         p0 = p
     end
-    # error("Pressure didn't converge.")
-    # should I do somethgin like if device==:cpu ?
+    error("Pressure didn't converge.")
 end
 
 """
