@@ -17,27 +17,31 @@ Fields
 - `boundary_tags` : physical group name → face indices (empty if no physical groups)
 - `cell_perimeters`: sum of face lengths bordering each cell
 """
-struct Mesh2D <: AbstractMesh
-    points          :: Vector{SVector{2, Float64}}
+struct Mesh2D{T<:Real,
+              VP<:AbstractVector{SVector{2,T}},   # points, centers, normals...
+              VT<:AbstractVector{T},               # measures, lengths...
+              VI<:AbstractVector{Int},             # boundary_faces
+              VE<:AbstractVector{SVector{2,Int}}} <: AbstractMesh
+    points          :: VP
     cells           :: Vector{Vector{Int}}
-    cell_centers    :: Vector{SVector{2, Float64}}
-    cell_measure    :: Vector{Float64}
-    faces           :: Vector{SVector{2, Int}}
-    face_centers    :: Vector{SVector{2, Float64}}
-    face_cells      :: Vector{SVector{2, Int}}
-    face_normals    :: Vector{SVector{2, Float64}}
-    face_lengths    :: Vector{Float64}
-    boundary_faces  :: Vector{Int}
+    cell_centers    :: VP
+    cell_measure    :: VT
+    faces           :: VE
+    face_centers    :: VP
+    face_cells      :: VE
+    face_normals    :: VP
+    face_lengths    :: VT
+    boundary_faces  :: VI 
     boundary_tags   :: Dict{String, Vector{Int}}
-    cell_perimeters :: Vector{Float64}
+    cell_perimeters :: VT
 end
 
 """
 computes polygon area using the shoelace formula
 """
-function _polygon_area(pts::Vector{SVector{2, Float64}}) :: Float64
+function _polygon_area(pts::AbstractVector{SVector{2,T}})::T where {T<:Real}
     n = length(pts)
-    A = 0.0
+    A = zero(T)
     for i in 1:n
         j = mod1(i + 1, n)
         A += pts[i][1] * pts[j][2] - pts[j][1] * pts[i][2]
@@ -48,14 +52,14 @@ end
 """
 reads a Gmsh .msh file and builds the corresponding 2D mesh
 """
-function load_mesh2D(filename::String) :: Mesh2D
+function load_mesh2D(filename::String, ::Type{T}=Float64) where {T<:Real}
     gmsh.initialize()
     gmsh.open(filename)
 
     # Nodes 
     node_tags, node_coords, _ = gmsh.model.mesh.getNodes()
     n_nodes = length(node_tags)
-    points = Vector{SVector{2, Float64}}(undef, n_nodes)
+    points = Vector{SVector{2, T}}(undef, n_nodes)
     node_tag_to_idx = Dict{Int, Int}()
     for i in 1:n_nodes
         tag = node_tags[i]
@@ -79,8 +83,8 @@ function load_mesh2D(filename::String) :: Mesh2D
     n_cells = length(cells)
 
     # Cell geometry
-    cell_centers = Vector{SVector{2, Float64}}(undef, n_cells)
-    cell_measure = Vector{Float64}(undef, n_cells)
+    cell_centers = Vector{SVector{2, T}}(undef, n_cells)
+    cell_measure = Vector{T}(undef, n_cells)
     for (c, verts) in enumerate(cells)
         pts = [points[v] for v in verts]
         n = length(pts)
@@ -97,15 +101,15 @@ function load_mesh2D(filename::String) :: Mesh2D
             a = verts[i]
             b = verts[mod1(i + 1, n)]
             key = SVector(minmax(a, b))
-            push!(get!(edge_dict, key, []), (c, (a, b)))
+            push!(get!(edge_dict, key, Tuple{Int, SVector{2, Int}}[]), (c, (a, b)))
         end
     end
 
     faces          = SVector{2,Int}[]
-    face_centers   = SVector{2,Float64}[]
+    face_centers   = SVector{2,T}[]
     face_cells_vec = SVector{2,Int}[]
-    face_normals   = SVector{2,Float64}[]
-    face_lengths   = Float64[]
+    face_normals   = SVector{2,T}[]
+    face_lengths   = T[]
     boundary_faces = Int[]
     face_lookup    = Dict{SVector{2,Int}, Int}()  # canonical key → face index
 
@@ -163,7 +167,7 @@ function load_mesh2D(filename::String) :: Mesh2D
 
     gmsh.finalize()
 
-    cell_perimeters = zeros(n_cells)
+    cell_perimeters = zeros(T, n_cells)
     for (face_id, (CL, CR)) in enumerate(face_cells_vec)
         l = face_lengths[face_id]
         CL != 0 && (cell_perimeters[CL] += l)
@@ -189,8 +193,8 @@ end
 """
 return the outward unit normal from `cell_id` across `face_id`.
 """
-function face_outward_normal(mesh::Mesh2D, face_id::Int, cell_id::Int) :: SVector{2, Float64}
+function face_outward_normal(mesh::Mesh2D, face_id::Int, cell_id::Int)
     n = mesh.face_normals[face_id]
     L, _ = mesh.face_cells[face_id]
-    return cell_id == L ? n : SVector(-n[1], -n[2])
+    return cell_id == L ? n : -n
 end

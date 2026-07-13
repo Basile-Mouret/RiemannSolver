@@ -2,35 +2,30 @@
 interface to solve a hyperbolic problem using finite volumes
 """
 function solve(
-    mesh::M,
+    mesh_cpu::M,
+    mesh_gpu,
     eq::E,
     boundary_conditions::B,
     ic::IC;
     max_time_steps::Int,
-    final_time::Float64,
-    CFL::Float64 = 0.9,
+    final_time::T,
+    CFL::T = 0.9,
     output_dir::String = "out/simulation",
-    dt_out::Float64 = final_time / 100,
-    dt_max::Float64 = Inf,
+    dt_out::T = final_time / 100,
+    dt_max::T = Inf,
     Verbose::Bool=true,
     n_info::Int=100
-) where {M<:AbstractMesh, E<:AbstractEquation, B, IC}
+) where {T<:Real, M<:AbstractMesh, E<:AbstractEquation, B, IC}
 
-    nvars = num_vars(eq)
-
-    N = length(mesh.cells)
-    values = Matrix{Float64}(undef, N, nvars)
-    for i in 1:N
-        values[i, :] .= ic(mesh.cell_centers[i])
-    end
+    values = ic.(mesh_gpu.cell_centers)
     new_values = copy(values)
 
     step = 0
-    t = 0.0
+    t = zero(T)
 
     outdir   = rstrip(output_dir, '/')
     filename = basename(outdir)
-    writer = VTKStreamWriter(mesh, eq; outdir=outdir, filename=filename, dt_out=dt_out)
+    writer = VTKStreamWriter(mesh_cpu, eq, dt_out; outdir=outdir, filename=filename)
     write_frame!(writer, values, t)
 
     if Verbose
@@ -38,14 +33,20 @@ function solve(
         solve_start_time = time()
     end
     while t < final_time && step < max_time_steps
-        dt = min(dt_max, compute_dt(mesh, eq, values, CFL))
+        dt = min(dt_max, compute_dt(mesh_gpu, eq, values, CFL))
+        if !isfinite(dt)
+            # vacuum state
+            maybe_write!(writer, U, t)          # optional: dump the last state first
+            error("Vacuum state at time $t")
+        end
+
         if t + dt > final_time
             dt = final_time - t
         end
 
         new_values .= values
 
-        explicit_euler_step!(new_values, values, mesh, eq, boundary_conditions, dt, t)
+        explicit_euler_step!(new_values, values, mesh_gpu, eq, boundary_conditions, dt, t)
         values .= new_values
 
 
@@ -69,7 +70,7 @@ end
 """
 prints simulation information during computation
 """
-function _print_sim_info(step::Int, max_time_steps::Int, t::Float64, final_time::Float64, solve_start_time::Float64)
+function _print_sim_info(step::Int, max_time_steps::Int, t::T, final_time::T, solve_start_time::T) where {T<:Real}
     elapsed = time() - solve_start_time
     elapsed_str = convert_time(elapsed)
     progress = step / max_time_steps
@@ -92,7 +93,7 @@ end
 """
 converts seconds into a string in the hh:mm:ss format
 """
-function convert_time(seconds::Float64)
+function convert_time(seconds::T) where {T<:Real}
     h = floor(Int,seconds / 3600)
     m = floor(Int,(seconds % 3600) / 60)
     s = floor(Int,seconds % 60)

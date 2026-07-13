@@ -29,36 +29,14 @@ _vtk_2Dcelltype(n) = n == 3 ? VTKCellTypes.VTK_TRIANGLE :
 
 _vtk_cells(mesh::Mesh2D) = [MeshCell(_vtk_2Dcelltype(length(c)), c) for c in mesh.cells]
 
-
-function _fill_scalar!(data::Vector{Float64}, extract::F, U::AbstractMatrix, ::Val{N}) where {F, N}
-    @inbounds for i in eachindex(data)
-        data[i] = extract(SVector{N}(@view U[i, :]))
-    end
-    return nothing
-end
-
-function _fill_vector!(data::Matrix{Float64}, extract::F, U::AbstractMatrix, ::Val{N}) where {F, N}
-    @inbounds for i in axes(data, 2)
-        v = extract(SVector{N}(@view U[i, :]))
-        @views data[:, i] .= v
-    end
-    return nothing
-end
-
-function _write_output_fields!(vtk, eq::AbstractEquation, U::AbstractMatrix)
-    ncells = size(U, 1)
-    nv     = num_vars(eq)
-    nvars  = Val(nv)
+function _write_output_fields!(vtk, eq::AbstractEquation, U::AbstractVector{SVector{N, T}}) where {T<:Real, N}
     for f in output_fields(eq)
         if f.kind == :scalar
-            data = Vector{Float64}(undef, ncells)
-            _fill_scalar!(data, f.extract, U, nvars)
+            data = f.extract.(U)
             vtk[f.name, VTKCellData()] = data
         elseif f.kind == :vector
-            d = length(f.extract(SVector{nv}(@view U[1, :])))   # runtime probe, once per field
-            data = Matrix{Float64}(undef, d, ncells)
-            _fill_vector!(data, f.extract, U, nvars)
-            vtk[f.name, VTKCellData()] = data
+            vals = f.extract.(U)                       # Vector{SVector{d,T}}
+            vtk[f.name, VTKCellData()] = reinterpret(reshape, T, vals)   # d × ncells view
         else
             error("unknown output field kind :$(f.kind) for \"$(f.name)\"")
         end
@@ -66,45 +44,42 @@ function _write_output_fields!(vtk, eq::AbstractEquation, U::AbstractMatrix)
     return nothing
 end
 
-mutable struct VTKStreamWriter{E<:AbstractEquation}
-    eq       :: E                # equation: provides the output fields
-    pvd                          # the open collection handle
-    points   :: Matrix{Float64}  # 3 × npoints, built once
-    cells    :: Vector{<:MeshCell}
-    dir      :: String
-    name     :: String
-    dt_out   :: Float64          # physical interval between frames
-    next_t   :: Float64          # next time we should write
-    frame    :: Int              # frame counter (for filenames)
+mutable struct VTKStreamWriter{T<:Real, E<:AbstractEquation}
+    eq     :: E
+    pvd    :: WriteVTK.CollectionFile
+    points :: Matrix{T}            # 3 × npoints, built once
+    cells  :: Vector{MeshCell}
+    dir    :: String
+    name   :: String
+    dt_out :: T
+    next_t :: T
+    frame  :: Int
 end
 
-function VTKStreamWriter(mesh::AbstractMesh, eq::AbstractEquation;
+function VTKStreamWriter(mesh::AbstractMesh, eq::AbstractEquation, dt_out::T;
                          outdir::AbstractString = "out",
-                         filename::AbstractString = "simulation",
-                         dt_out::Real)
+                         filename::AbstractString = "simulation") where {T<:Real}
     mkpath(outdir)
-
     points = _vtk_points(mesh)
     cells  = _vtk_cells(mesh)
-
-    pvd = paraview_collection(joinpath(outdir, filename))  # stays open
-    VTKStreamWriter(eq, pvd, points, cells, String(outdir), String(filename), Float64(dt_out), 0.0, 0)
+    pvd    = paraview_collection(joinpath(outdir, filename))
+    return VTKStreamWriter{T, typeof(eq)}(eq, pvd, points, cells, String(outdir), String(filename), dt_out, zero(T), 0)
 end
 
 # Write the current state as a frame at time t
-function write_frame!(w::VTKStreamWriter, U::AbstractMatrix, t::Real)
+function write_frame!(w::VTKStreamWriter, U, t::Float64)
+    U_host = Array(U)
     w.frame += 1
     fname = joinpath(w.dir, "$(w.name)_$(lpad(w.frame, 5, '0'))")
     vtk_grid(fname, w.points, w.cells; compress=false) do vtk
-        _write_output_fields!(vtk, w.eq, U)
+        _write_output_fields!(vtk, w.eq, U_host)
         w.pvd[t] = vtk            # register frame at time t; vtu saved at block end
     end
     return nothing
 end
 
 # Call every step; writes only when simulation time crosses the next interval
-function maybe_write!(w::VTKStreamWriter, U::AbstractMatrix, t::Real)
-    if t >= w.next_t
+function maybe_write!(w::VTKStreamWriter, U, t::Float64)    if t >= w.next_t
         write_frame!(w, U, t)
         # advance, skipping any intervals jumped over by a large dt
         while w.next_t <= t

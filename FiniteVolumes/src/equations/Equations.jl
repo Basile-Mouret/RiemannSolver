@@ -8,28 +8,27 @@ num_vars(::AbstractEquation)::Int = error("num_vars not implemented")
 """
 returns the maximum wave speed for a specific equation
 """
-max_wave_speed(::AbstractMesh, ::AbstractEquation, cell_values::Matrix{Float64})::Float64 = error("max_wave_speed not implemented")
+function max_wave_speed(::AbstractMesh, ::AbstractEquation, cell_values::Matrix{T})::T where {T<:Real}
+    error("max_wave_speed not implemented")
+end
 
 """
 computes the timestep from data and the given Courant number 
 """
-compute_dt(::AbstractMesh, eq::AbstractEquation, cell_values::Matrix{Float64}, CFL::Float64)::Float64 = error("compute_dt not implemented for $(typeof(eq))")
+function compute_dt(::AbstractMesh, eq::AbstractEquation, cell_values::Matrix{T}, CFL::T)::T where {T<:Real}
+    error("compute_dt not implemented for $(typeof(eq))")
+end
 
 """
 computes the flux between two neighbooring cells by solving the corresponding Riemann problem
 """
-flux(eq::AbstractEquation, uL::AbstractVector{Float64}, uR::AbstractVector{Float64}, normal) = error("flux not implemented for $(typeof(eq))")
-
-# # TODO
-# """
-# computes the exact solution of a simulation
-# """
-# exact_solution!(utrue::Matrix{Float64}, eq::AbstractEquation, xmid::Vector{Float64}, ic::Function, bcs::Dict, x0::Float64, x1::Float64, t::Float64) = error("exact_solution! not implemented for $(typeof(eq))")
+flux(eq::AbstractEquation, uL::AbstractVector{T}, uR::AbstractVector{T}, normal) where {T<:Real} = error("flux not implemented for $(typeof(eq))")
 
 # 1D
 abstract type AbstractEquation1D <:AbstractEquation end
 
-flux(eq::AbstractEquation1D, uL::AbstractVector{Float64}, uR::AbstractVector{Float64}, normal) = flux(eq, uL, uR)
+flux(eq::AbstractEquation1D, uL::AbstractVector{T}, uR::AbstractVector{T}, normal) where {T<:Real} = flux(eq, uL, uR)
+
 
 # 2D
 abstract type AbstractEquation2D <: AbstractEquation end

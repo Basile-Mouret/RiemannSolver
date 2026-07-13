@@ -1,11 +1,11 @@
-struct Euler2D{F <:AbstractIdealGasNumericalFlux} <: AbstractEquation2D
-    gamma::Float64
+struct Euler2D{T<:Real, F<:AbstractIdealGasNumericalFlux} <: AbstractEquation2D
+    gamma::T
     numerical_flux::F
 end
 
 num_vars(::Euler2D) = 4
 
-function flux(eq::Euler2D, U_l::AbstractVector{Float64}, U_r::AbstractVector{Float64}, normal::SVector{2, Float64})
+function flux(eq::Euler2D, U_l::AbstractVector{T}, U_r::AbstractVector{T}, normal::SVector{2, T}) where {T<:Real}
 
     nx, ny = normal # cosθ, sinθ in Toro p.105
 
@@ -28,28 +28,17 @@ function flux(eq::Euler2D, U_l::AbstractVector{Float64}, U_r::AbstractVector{Flo
                   )
 end
 
-function compute_dt(mesh::Mesh2D, eq::Euler2D, U::Matrix{Float64}, CFL::Float64)::Float64
-    dt_min = Inf
-    nvars = num_vars(eq)
-
-    for i in axes(U, 1)
-        U_cell = SVector{nvars}(@view U[i, :])
-        rho, u, v, p = _cons_to_prim_euler_ideal_gas(U_cell, eq.gamma, :two)
-
-        if p <= 0 || rho <= 0
-            x,y = mesh.cell_centers[i]
-            error("Non-admissible state at step $step, cell $i @ ($x,$y): ρ=$rho, p=$p")
-        end
-
-        a = sqrt(eq.gamma * p / rho) 
-        s_local = sqrt(u*u + v*v) + a
-
-        char_length = 2.0 * mesh.cell_measure[i] / mesh.cell_perimeters[i]
-        dt_local = char_length / s_local
-        dt_min = min(dt_min, dt_local)
+function compute_dt(mesh::Mesh2D, eq::Euler2D, U::AbstractVector{SVector{4, T}}, CFL::T)::T where {T<:Real}
+    _compute_dt_local(u, area, perim) = begin
+        rho, u, v, p = _cons_to_prim_euler_ideal_gas(u, eq.gamma)
+        (rho<=0 || p<=0) && return T(NaN) # check positivity of pressure and density
+        a = sqrt(eq.gamma * p / rho)
+        s = sqrt(u*u + v*v) + a
+        return 2 * area / (perim * s)
     end
-
-    return CFL * dt_min
+    
+    dt_local = _compute_dt_local.(U,mesh.cell_measure, mesh.cell_perimeters)
+    return CFL * minimum(dt_local)
 end
 
 function output_fields(eq::Euler2D)
@@ -57,9 +46,9 @@ function output_fields(eq::Euler2D)
     [
         OutputField("Rho",  :scalar, U -> U[1]),
         OutputField("U", :vector, U -> SVector(U[2] / U[1], U[3] / U[1])),
-        OutputField("p", :scalar, U -> (γ - 1.0) * (U[4] - 0.5 * (U[2]^2 + U[3]^2) / U[1])),
+        OutputField("p", :scalar, U -> (γ - 1) * (U[4] - (U[2]^2 + U[3]^2) / (2 * U[1]))),
         OutputField("E",   :scalar, U -> U[4]),
-        OutputField("e",   :scalar, U -> (U[4] - 0.5 * (U[2]^2 + U[3]^2) / U[1]) / U[1]),
+        OutputField("e",   :scalar, U -> (U[4] - (U[2]^2 + U[3]^2) / (2 * U[1])) / U[1]),
         OutputField("Momentum", :vector, U -> SVector(U[2], U[3])),
     ]
 end
