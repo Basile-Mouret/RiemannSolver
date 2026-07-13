@@ -26,7 +26,7 @@ function get_flux_2D(numerical_flux::IdealGasGodunov,U_l::AbstractVector{T}, U_r
         W_r = _cons_to_prim_euler_ideal_gas(U_r, gamma)
 
         # use an exact riemann solver
-        rho, u_h, p = solve_riemann_exact(0,
+        rho, u_h, p = solve_riemann_exact(zero(T),
                                           SVector(W_l[1], W_l[2], W_l[4]),
                                           SVector(W_r[1], W_r[2], W_r[4]),
                                           gamma,
