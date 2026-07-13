@@ -1,6 +1,20 @@
 struct IdealGasRoe <: AbstractIdealGasNumericalFlux
     entropy_fix::Symbol
+
+    function IdealGasRoe(entropy_fix::Symbol)
+        implemented_fixes = [:None, :Harten_Hyman, :Harten]
+        if !(entropy_fix in implemented_fixes)
+            error("Entropy fix not implemented. Implemented fixes are $implemented_fixes")
+        end
+        new(entropy_fix)
+    end
+
+    function IdealGasRoe()
+        new(:Harten_Hyman)
+    end
 end
+
+
 
 """
 Roe flux for a 1D Riemann Problem
