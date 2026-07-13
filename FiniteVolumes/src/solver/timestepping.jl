@@ -7,8 +7,6 @@ function explicit_euler_step!(
     dt::T,
     t::T,
 ) where {N, T<:Real, M<:AbstractMesh, E<:AbstractEquation, BC<:AbstractBC}
-    nvars = num_vars(eq)
-
     # interior cells
     for (face_id, (CL, CR)) in enumerate(mesh.face_cells)
         if CL != 0 && CR != 0
@@ -18,10 +16,9 @@ function explicit_euler_step!(
             F = flux(eq, uL, uR, mesh.face_normals[face_id])
             coefL = dt * mesh.face_lengths[face_id] / mesh.cell_measure[CL]
             coefR = dt * mesh.face_lengths[face_id] / mesh.cell_measure[CR]
-            for v in 1:nvars
-                new_values[CL, v] -= coefL * F[v]
-                new_values[CR, v] += coefR * F[v]
-            end
+
+            new_values[CL] -= coefL * F
+            new_values[CR] += coefR * F
         end
     end
 
@@ -49,23 +46,18 @@ function _apply_boundary_faces!(
 ) where {N, T<:Real, M<:AbstractMesh, E<:AbstractEquation, BC<:AbstractBC}
     for face_id in boundary_faces
         (CL, CR) = mesh.face_cells[face_id]
-        nvars = num_vars(eq)
         if CL == 0
             uR = cell_values[CR]
             uL = apply_ghost(bc, uR, mesh.face_centers[face_id], t, mesh.face_normals[face_id])
             F = flux(eq, uL, uR, mesh.face_normals[face_id])
             coefR = dt * mesh.face_lengths[face_id] / mesh.cell_measure[CR]
-            for v in 1:nvars
-                new_values[CR, v] += coefR * F[v]
-            end
+            new_values[CR] += coefR * F
         else
             uL = cell_values[CL]
             uR = apply_ghost(bc, uL, mesh.face_centers[face_id], t, mesh.face_normals[face_id])
             F = flux(eq, uL, uR, mesh.face_normals[face_id])
             coefL = dt * mesh.face_lengths[face_id] / mesh.cell_measure[CL]
-            for v in 1:nvars
-                new_values[CL, v] -= coefL * F[v]
-            end
+            new_values[CL] -= coefL * F
         end
     end
 end

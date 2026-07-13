@@ -2,8 +2,7 @@
 interface to solve a hyperbolic problem using finite volumes
 """
 function solve(
-    mesh_cpu::M,
-    mesh_gpu,
+    mesh::M,
     eq::E,
     boundary_conditions::B,
     ic::IC;
@@ -17,7 +16,7 @@ function solve(
     n_info::Int=100
 ) where {T<:Real, M<:AbstractMesh, E<:AbstractEquation, B, IC}
 
-    values = ic.(mesh_gpu.cell_centers)
+    values = ic.(mesh.cell_centers)
     new_values = copy(values)
 
     step = 0
@@ -25,7 +24,7 @@ function solve(
 
     outdir   = rstrip(output_dir, '/')
     filename = basename(outdir)
-    writer = VTKStreamWriter(mesh_cpu, eq, dt_out; outdir=outdir, filename=filename)
+    writer = VTKStreamWriter(mesh, eq, dt_out; outdir=outdir, filename=filename)
     write_frame!(writer, values, t)
 
     if Verbose
@@ -33,11 +32,11 @@ function solve(
         solve_start_time = time()
     end
     while t < final_time && step < max_time_steps
-        dt = min(dt_max, compute_dt(mesh_gpu, eq, values, CFL))
+        dt = min(dt_max, compute_dt(mesh, eq, values, CFL))
+
         if !isfinite(dt)
             # vacuum state
-            maybe_write!(writer, U, t)          # optional: dump the last state first
-            error("Vacuum state at time $t")
+            error("Non admissible state at time $t")
         end
 
         if t + dt > final_time
@@ -46,7 +45,7 @@ function solve(
 
         new_values .= values
 
-        explicit_euler_step!(new_values, values, mesh_gpu, eq, boundary_conditions, dt, t)
+        explicit_euler_step!(new_values, values, mesh, eq, boundary_conditions, dt, t)
         values .= new_values
 
 
