@@ -27,20 +27,20 @@ function get_flux_3D(numerical_flux::IdealGasHLL, U_l::AbstractVector{T}, U_r::A
 
     u_bar =  (sqrt_rho_l * u_l + sqrt_rho_r * u_r) / (sqrt_rho_l + sqrt_rho_r)
 
-    S_l = u_bar - d_bar
-    S_r = u_bar + d_bar
+    S_l = min(u_l - a_l, u_bar - d_bar)
+    S_r = max(u_r + a_r, u_bar + d_bar)
 
     # compute the HLL flux
     
     F_l = SVector(rhou_l, rhou_l*u_l + p_l, rhou_l*v_l, rhou_l*w_l, u_l*(E_l + p_l))
     F_r = SVector(rhou_r, rhou_r*u_r + p_r, rhou_r*v_r, rhou_r*w_r, u_r*(E_r + p_r))
 
-    if S_l <= 0 
+    if S_l >= 0 
         return F_l
-    elseif S_r >= 0
-        return (S_r*F_l - S_l*F_r + S_l*S_r*(U_r - U_l))/(S_r - S_l)
-    else
+    elseif S_r <= 0
         return F_r
+    else
+        return (S_r*F_l - S_l*F_r + S_l*S_r*(U_r - U_l))/(S_r - S_l)
     end
 end
 
