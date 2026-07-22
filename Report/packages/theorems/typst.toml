@@ -1,0 +1,4 @@
+[package]
+name = "theorems"
+version = "2.0.0"
+entrypoint = "config.typ"
