@@ -101,3 +101,81 @@ $
 
 Euler system in @Euler_cons is a time dependent first order system of PDEs.
 */
+
+
+
+
+
+== Submodels
+=== Barotropic Euler equations
+By assuming that the density depends only on pressure, $rho = rho(p)$, the system simplifies a lot 
+// what are we loosing?
+These are a class of subsystems called the Barotropic Euler equations (from the greek "Baro-" : pressure, "-tropic" : depends on). 
+One particular barotropic system arises when we suppose the entropy stays constant, this is called the _isentropic_ Euler equations.
+$
+dif S = 0 \
+dots \
+p(rho) = kappa rho^gamma
+$
+Another Barotropic system comes from the SWE:
+explain free surface gravity flows + swe simplifications
+
+$U = vec(phi, phi u)$ and $F(U) = vec(phi u, phi u^2 + 1/2 phi^2)$
+
+we recognize a isentropic euler equation with $kappa=1/2$ and $gamma = 2$.
+==== Analysis of the Isentropic Euler equations
+
+$U = vec(rho, rho u)$ and $F(U) = vec(rho u, rho u^2 + 1/2 rho^2)$
+
+The speed of sound is given by 
+$
+a = sqrt(((partial p) / (partial rho))_s) = sqrt((dif p)/(dif rho)) = sqrt(kappa gamma rho^(gamma-1))
+$
+
+We now study the eigenvalues and eigenvectors of the jacobian of the flux.
+$
+nabla_U F(U) = mat(0, 1; a^2 - u^2, 2u)
+$
+
+Its eigenvalues are the solutions to the characteristic polynomial given by
+$
+lambda^2 - 2 u lambda + u^2 - a^2 = 0\
+$
+As $Delta = 4 a^2 > 0$, the Jacobian has two real roots
+$
+lambda_(1,2) = u plus.minus a
+$
+
+The corresponding right eigenvectors are
+$
+K_(1,2) = vec(1, u plus.minus a)
+$
+
+Let us now characterize these fields : 
+$
+&"Let " U in RR^2, &nabla lambda_1 (U) dot K_1(U) &= vec((-u)/rho - ((gamma-1) a) / (2 rho), 1/rho) dot vec(1, u - a) = - ((gamma + 1) a) / (2 rho) != 0\
+&"and"             &nabla lambda_2 (U) dot K_2(U) &= vec((-u)/rho + ((gamma-1) a) / (2 rho), 1/rho) dot vec(1, u + a) = ((gamma+1)a)/ (2 rho) != 0\
+$
+
+So both field are genuinely non linear.
+Now we want to solve the Riemann problem for the isentropic Euler equations.
+
+$
+U(x, t=0) = cases(U_l "if" x<=x_m, U_r "if" x>x_m)
+$
+
+Applying the Rankine Hugoniot condition across the left wave of speed S_l
+
+$
+cases(
+  rho_l u_l - rho_* u_* &= S_l (rho_l - rho_*),
+  rho_l u_l^2 + kappa rho_l^gamma - rho_* u_*^2 - kappa rho_*^gamma &= S_l (rho_l u_l - rho_* u_*)
+)
+$
+and to the right wave : 
+$
+cases(
+  rho_* u_* - rho_r u_r &= (u-a) (rho_* - rho_r),
+  rho_* u_*^2 + kappa rho_*^gamma - rho_r u_r^2 - kappa rho_r^gamma &= (u-a)(rho_* u_* - rho_r u_r)
+)
+$

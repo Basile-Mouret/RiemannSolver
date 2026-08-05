@@ -1,9 +1,6 @@
 #let eq = $arrow.l.r.double.long$
 #let pm = $plus.minus$
 #let num(eq) = math.equation(block: true, supplement:none, numbering: it => {numbering("(1.1)", counter(heading).get().first(), it)}, eq)
-
-#pagebreak() 
-
 = Implementation in Julia
 
 The first part of this internship was dedicated to understand and implement the Godunov method. I chose to use Julia, a high level programming languge designed for scientific computing.
@@ -32,5 +29,6 @@ We started with linear models like the linear transport and the wave system.
 For such equations we proceed as described in @riemann_linear and compute the numerical flux from the upwind direction.
 Then we experienced with the non linear Burgers' equation. To compute the numerical flux we proceeded as in @exampleburger. In comparison to the linear case, we now had to compute the fastest wave dynamically as the state was influencing it.
 Finally we implemented the full Euler equations for ideal gases using the Godunov method with multiple Riemann solvers.
+
 == Tests
 

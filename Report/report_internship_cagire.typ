@@ -46,8 +46,13 @@
 #show link: set text(fill: blue)
 
 #include "chapters/1-Introduction.typ"
-#include "chapters/2-Solver.typ"
-#include "chapters/3-Numerical_Instablities.typ"
+#pagebreak()
+#include "chapters/2-Finite_Volumes.typ"
+#pagebreak()
+#include "chapters/3-Solver.typ"
+#pagebreak()
+#include "chapters/4-Numerical_Instablities.typ"
+#pagebreak()
 
 // ------------------- bibliography -------------------
 
