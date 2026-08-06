@@ -1,6 +1,10 @@
 #import "../packages/theorems/config.typ" : *
 #show: thmrules.with(qed-symbol: $square$)
 
+// ploting
+#import "@preview/lilaq:0.6.0" as lq
+#import "@preview/tiptoe:0.4.0"
+
 // == Notations
 //
 // scalar : lower case $s$
@@ -41,7 +45,7 @@ For compressible fluids these macroscopic quantities are :
 These are called the _primitive_ variables, but in order to compute them we use the _conserved variables_ : 
 
 - the *density* $rho (bold(x),t)$
-- the *momentum vector* $bold(p)  (bold(x),t) = rho bold(v)$
+- the *momentum vector* $bold(m)  (bold(x),t) = rho bold(v)$
 - the *total energy per unit volume* $E(bold(x), t)$
 
 // what is the difference? why do we have multiple representations?
@@ -106,7 +110,7 @@ This equation is the simplest non-linear conservation law, and as such is useful
 Finally, a more complete system that is useful before studying the full Euler system are obtained when assuming a constant entropy, $dif S = 0$.
 This leads to pressure being fully described by the density field, $p(rho) = kappa rho^gamma$, with $kappa$ and $gamma$ two constants. We can thus drop the last equation of the euler system.
 
-For $gamma=2$ and $kappa=$ we obtain the same equations as in the Shallow Water Equations.
+For $gamma=2$ and $kappa=g/2$ we obtain the same equations as in the Shallow Water Equations.
 
 == Hyperbolicity
 
@@ -127,61 +131,133 @@ where $bold(A) = nabla_bold(u) F(bold(u))$ is the Jacobian matrix of the flux.
 
 Thus there exists an invertible matrix formed by the right eigenvectors $P(bold(u)) = (bold(r)_1, dots, bold(r)_m)$  and a diagonal matrix with the diagonal elements being the eigenvalues $D(bold(u)) = mat(lambda_1,,0 ;,dots.down,;0,, lambda_m)$ such that $A(bold(u)) = P(bold(u)) D(bold(u)) P(bold(u))^(-1)$.
 
-We call _characteristic variables_ the components of the vector 
+
+This is especially useful for *linear* hyperbolic conservation laws, as then the $P$ and $D$ do not depend on $bold(u)$.
+
+In that case, we can use the change of variable
 $
-bold(v) = P(bold(u))^(-1) bold(u)
+bold(v) = P^(-1) bold(u)
 $
-Using them, the quasilinear form can be rewritten as : 
+These are called _characteristic variables_ and using them, the quasilinear form can be rewritten as a sysetem of $n$ independent advection equations : 
 $
-bold(v)_t + D(bold(u)) bold(v)_x = 0
-$
-which a system of $n$ equations of the form:
-$
-(partial v_i)/(partial t) + lambda_(i)(bold(u)) (partial v_i)/(partial x) = 0
+(partial v_i)/(partial t) + lambda_(i) (partial v_i)/(partial x) = 0
 $
 
-Where $lambda_(i)(bold(u))$ are the diagonal entries of $D(bold(u))$, i.e. the eigenvalues of $nabla F(bold(u))$. They are called the _characteristic speeds_.
+Where $lambda_(i)$ are the diagonal entries of $D$, i.e. the eigenvalues of $nabla_(bold(u)) F(bold(u))$ and are called the _characteristic speeds_.
 
-This is especially useful for *linear* hyperbolic conservation laws, as then the eigenvalues do not depend on $bold(u)$ and system becomes $n$ linear advection problems on the characteristic variables.
+The more general non-linear case, is more complicated to solve.
 
 === Relation to the classification of second order equations
 
 The _hyperbolic_ name comes from the classification of second order scalar equation into elliptic, parabolic and hyperbolic. 
 
-A second order equation of the form $a u_(x x) + b u_(x y) + c u_(y y) = 0$  is classified using the determinant $Delta = b^2 - 4 a c$.
+A second order equation of the form $a u_(x x) + b u_(x y) + c u_(y y) = 0$  is classified using the discriminant $Delta = b^2 - 4 a c$.
 If $Delta>0$ the equation is hyperbolic, if $Delta=0$ the equation is parabolic and if $Delta<0$ the equation is elliptic.
 
 By setting $bold(w) = vec(u_x, u_y)$ and using the condition $(u_x)_t = (u_t)_x$, we get a first order system : 
 $
-bold(w)_x + A bold(w)_y \ "with" A = 1/a mat(b, c; -1, 0)
+bold(w)_x + A bold(w)_y = 0\ "with" A = mat(b/a, c/a; -1, 0)
 $
 
 The characteristic polynomial of $A$ is given by  
-$lambda^2 - b lambda + a c = 0$ and it has real roots when $b^2 - 4 a c > 0$, so the hyperbolicity condition is the same for both definitions.
+$lambda^2 - b/a lambda + c/a = 0$ and it has real roots when $(b^2 - 4 a c) / (a^2) > 0$, so the hyperbolicity condition is the same for both definitions.
 
-The classification of the equations translate in their behaviour. Hyperbolic equations are wave like with a finite propagation speed. This isn't the case for parabolic equations whose diffusive behaviour affects the whole domain without any speed limit. Finally elliptic problems cannot be time dependent and as such modelize steady state problems.
+The classification of the equations translate in their behaviour. Hyperbolic equations are wave like with a finite propagation speed. This isn't the case for parabolic equations whose diffusive behaviour affects the whole domain without any speed limit. Finally elliptic problems do not have any real characteristic direction and thus no timelike direction.
 
-For example, steady state heat conductivity, modelized by Laplace's equation $ Delta u = 0$ is elliptic and adding a time dependency $u_t + Delta u = 0$ makes it parabolic. Linear advection, $u_t + c u_x = 0$ on the other hand is Hyperbolic and as we will see, so are the equations presented in @submodels. The full Euler equation however are Hyperbolic only under certain condition and can become elliptic, for example in a steady subsonic compressible model. Classification becomes even more complex when using the Navier Stokes equations that add a diffusive term.
-
+For example, steady state heat conductivity, modelized by Laplace's equation $- Delta u = 0$ is elliptic and adding a time dependency $u_t - Delta u = 0$ makes it parabolic.
+Linear advection, $u_t + c u_x = 0$ on the other hand is Hyperbolic and so are the equations presented in @submodels.
+The full Euler equation however are Hyperbolic only under certain condition and can become elliptic, for example in a steady subsonic compressible model.
+Classification becomes even more complex when using the Navier Stokes equations that add a diffusive term.
 
 
 === Characteristic curves
 
-The eigenvalues of the jacobian of the flux have a direct interpretation as propagation speeds.
-Let $bold(l)_k$ be a left eigenvector, $bold(l)_k bold(A) = lambda_k bold(l)_k$.
-Multiplying @quasilinear on the left gives
-$
-bold(l)_k dot (bold(u)_t + lambda_k bold(u)_x) = 0
-$
-The bracket is a derivative along the curve $dif x slash dif t = lambda_k$ only.
-Such curves are called _characteristics_, and along each of them the system
-reduces to an ordinary differential equation. Hyperbolicity is therefore the
-statement that there exist $m$ real characteristic families, enough to
-determine the solution.
+#definition([characteristic curves])[
+  Characteristics are curve in the $x-t$ plane where the PDE reduces to an ODE in time.
+]
 
-For the one dimensional Euler equations the eigenvalues are $u - a$, $u$ and
-$u + a$, distinct as long as $a > 0$, so the system is strictly hyperbolic
-away from vacuum.
+These curve are a very useful tool to visualize the wave like propagation of hyperbolic systems.
+
+Let us first study the linear scalar advection $u_t + c u_x = 0$ and let us consider a curve $x = x(t)$. We can thus write $u$ as a function of t $u(t) = u(x(t), t)$. Differentiating $u$ over $t$ along the curve $x(t)$ gives :
+$
+(dif u)/(dif t) = (partial u)/(partial t) + (dif x)/(dif t) (partial u)/(partial x)
+$
+This is similar to the LHS of the PDE.
+In the case where the curve satisfies $(dif x)/(dif t) = c$ we have $(dif u)/(dif t) = 0$.
+This means that $u(t) = u_0$ is constant along the curve. Similarly to isolines for spatial visualization, the characteristics show us the path of constant values over time.
+From $(dif x)/(dif t) = c$ we obtain $x(t) = c t + x_0$, on the $x-t$ plane these give lines with a slope $1/c$.
+
+
+
+#let char-plot = it => {
+  show: lq.set-diagram(
+    ylabel: $t$,
+    xlabel: $x$,
+    xaxis: (subticks: none, ticks:none, tip: tiptoe.stealth, mirror:false, position:0),
+    yaxis: (subticks: none, ticks:none, tip: tiptoe.stealth, mirror:false, position:0),
+    xlim: (-1, 5),
+    ylim: (-1, 3),
+    aspect-ratio: 1, 
+    width : auto,
+  )
+  show: lq.set-label(angle: 0deg)
+  show lq.selector(lq.label): set align(top + right)
+  it
+}
+#align(center)[
+  #{
+    show: char-plot
+    lq.diagram(
+      height: 5cm,
+      lq.plot((0, 2), (10/4, 5), mark:none, color:black),
+      lq.plot((0, 3), (5/4, 5), mark:none, color:black),
+      lq.plot((0, 4), (0, 5), mark:none, color:black),
+      lq.plot((1, 5), (0, 5), mark:none, color:black),
+      lq.plot((2, 6), (0, 5), mark:none, color:black),
+      lq.plot((3, 7), (0, 5), mark:none, color:black),
+      lq.ellipse(2, 0, width: 0.2, height: 0.2, align: center + horizon)[$u(x_0,0)$],
+      lq.ellipse(0, 5/4, width: 0.2, height: 0.2, align: center + horizon)[$u(t,0)$],
+    )
+  }
+]
+
+The values of $u$ on the rays are given either by the initial condition or the boundary condition.
+
+Linear hyperbolic systems can be decomposed into independent scalar advection equations on the characteristic variables. Each of these wave are then getting transported by their correspond speed given by the eigenvalues.
+
+Let us now consider a scalar hyperbolic conservation law $u_t + f(u)_x = 0$. For $f$ differentiable, we can write it in quasilinear form $u_t + lambda(u) u_x = 0$ with $lambda(u) = f'(u)$. If we then consider characteristic curves satisfying 
+
+$
+(dif x)/(dif t) = lambda(u), quad x(0) = x_0
+$
+
+then the local derivative of $u(t) = u(x(t), t)$ along $x(t)$ gives
+$
+(dif u)/(dif t) = u_t + lambda(u)u_x = 0
+$
+i.e. $u$ is constant on this curve whose value is given by following the characteristic back in time, crossing either the initial value or a boundary condition. The slope can then be evaluated as $lambda(u_0)$ and the curve is given by $x(t) = x_0 + lambda(u_0(x_0)) t$. This means that two rays can have different slopes which leads to crossings, where a single point has multiple values and the model breaks at time $t_c$.
+
+
+#align(center)[
+  #{
+    show: char-plot
+    lq.diagram(
+      height: 5cm,
+      lq.plot((1, 4), (0, 2), mark:none, color:black),
+      lq.plot((2, 4), (0, 2), mark:none, color:black),
+      lq.plot((3, 4), (0, 2), mark:none, color:black),
+      lq.plot((0, 4), (2, 2), mark:none, color:gray, stroke:(dash:"dashed")),
+      lq.place(-0.2,2)[$t_c$]
+
+    )
+  }
+]
+
+In order to keep an inviscid model we have to allow discontinuities in the computed solutions. This can be done by searching for weak solution using the integral form of the conservation law.
+
+=== 
+
+
 
 
 == Hyperbolicity
