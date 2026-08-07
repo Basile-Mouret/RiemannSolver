@@ -48,9 +48,6 @@ These are called the _primitive_ variables, but in order to compute them we use 
 - the *momentum vector* $bold(m)  (bold(x),t) = rho bold(v)$
 - the *total energy per unit volume* $E(bold(x), t)$
 
-// what is the difference? why do we have multiple representations?
-// why mass proportionality is important
-
 Using the fundamental laws of conservation of mass, Newton second law and the conservation of Energy we get the Euler equations governing inviscid compressible fluids on the _conserved variables_ : 
 $
 cases(
@@ -132,7 +129,7 @@ where $bold(A) = nabla_bold(u) F(bold(u))$ is the Jacobian matrix of the flux.
 Thus there exists an invertible matrix formed by the right eigenvectors $P(bold(u)) = (bold(r)_1, dots, bold(r)_m)$  and a diagonal matrix with the diagonal elements being the eigenvalues $D(bold(u)) = mat(lambda_1,,0 ;,dots.down,;0,, lambda_m)$ such that $A(bold(u)) = P(bold(u)) D(bold(u)) P(bold(u))^(-1)$.
 
 
-This is especially useful for *linear* hyperbolic conservation laws, as then the $P$ and $D$ do not depend on $bold(u)$.
+This is especially useful for *linear* hyperbolic conservation laws as $P$ and $D$ do not depend on $bold(u)$.
 
 In that case, we can use the change of variable
 $
@@ -193,33 +190,35 @@ From $(dif x)/(dif t) = c$ we obtain $x(t) = c t + x_0$, on the $x-t$ plane thes
   show: lq.set-diagram(
     ylabel: $t$,
     xlabel: $x$,
-    xaxis: (subticks: none, ticks:none, tip: tiptoe.stealth, mirror:false, position:0),
-    yaxis: (subticks: none, ticks:none, tip: tiptoe.stealth, mirror:false, position:0),
+    xaxis: (subticks: none, ticks: none, tip: tiptoe.stealth, mirror: false, position: 0),
+    yaxis: (subticks: none, ticks: none, tip: tiptoe.stealth, mirror: false, position: 0),
     xlim: (-1, 5),
     ylim: (-1, 3),
-    aspect-ratio: 1, 
-    width : auto,
+    aspect-ratio: 1,
+    width: auto,
   )
   show: lq.set-label(angle: 0deg)
   show lq.selector(lq.label): set align(top + right)
   it
 }
-#align(center)[
-  #{
+
+#figure(
+  {
     show: char-plot
     lq.diagram(
       height: 5cm,
-      lq.plot((0, 2), (10/4, 5), mark:none, color:black),
-      lq.plot((0, 3), (5/4, 5), mark:none, color:black),
-      lq.plot((0, 4), (0, 5), mark:none, color:black),
-      lq.plot((1, 5), (0, 5), mark:none, color:black),
-      lq.plot((2, 6), (0, 5), mark:none, color:black),
-      lq.plot((3, 7), (0, 5), mark:none, color:black),
+      lq.plot((0, 2), (10/4, 5), mark: none, color: black),
+      lq.plot((0, 3), (5/4, 5), mark: none, color: black),
+      lq.plot((0, 4), (0, 5), mark: none, color: black),
+      lq.plot((1, 5), (0, 5), mark: none, color: black),
+      lq.plot((2, 6), (0, 5), mark: none, color: black),
+      lq.plot((3, 7), (0, 5), mark: none, color: black),
       lq.ellipse(2, 0, width: 0.2, height: 0.2, align: center + horizon)[$u(x_0,0)$],
       lq.ellipse(0, 5/4, width: 0.2, height: 0.2, align: center + horizon)[$u(t,0)$],
     )
-  }
-]
+  },
+  caption: [Characteristic curves in the $(x,t)$ plane for linear advection.],
+) <fig-characteristics>
 
 The values of $u$ on the rays are given either by the initial condition or the boundary condition.
 
@@ -238,8 +237,8 @@ $
 i.e. $u$ is constant on this curve whose value is given by following the characteristic back in time, crossing either the initial value or a boundary condition. The slope can then be evaluated as $lambda(u_0)$ and the curve is given by $x(t) = x_0 + lambda(u_0(x_0)) t$. This means that two rays can have different slopes which leads to crossings, where a single point has multiple values and the model breaks at time $t_c$.
 
 
-#align(center)[
-  #{
+#figure(
+  {
     show: char-plot
     lq.diagram(
       height: 5cm,
@@ -250,33 +249,174 @@ i.e. $u$ is constant on this curve whose value is given by following the charact
       lq.place(-0.2,2)[$t_c$]
 
     )
-  }
+  },
+  caption: [Crossing of characteristic curves.],
+)
+
+In order to keep an inviscid model we have to allow discontinuities in the computed solutions.
+This can be done by searching for weak solution using the integral form of the conservation law.
+
+=== Weak solutions
+
+Crossing characteristics force us to accept solutions that are not differentiable in the classical sense.
+We only require $bold(u)$ to be locally integrable, this is possible thanks to distribution theory.
+
+#definition([weak solution])[
+  $bold(u)$ is a _weak solution_ of $bold(u)_t + bold(F)(bold(u))_x = 0$ if for every test function $phi in C_0^1 (RR times RR^+)$
+  $
+  integral_0^oo integral_RR (bold(u) phi_t + bold(F)(bold(u)) phi_x) dif x dif t + integral_RR bold(u)(x,0) phi(x,0) dif x = 0 .
+  $
 ]
 
-In order to keep an inviscid model we have to allow discontinuities in the computed solutions. This can be done by searching for weak solution using the integral form of the conservation law.
+The weak formulation admits discontinuous data, which the classical theory
+could not. The simplest such data is a single jump, and the resulting initial
+value problem is central to everything that follows.
 
-=== 
+#definition([Riemann problem])[
+  The _Riemann problem_ for a conservation law is the initial value problem
+  $
+  cases(
+    bold(u)_t + bold(F)(bold(u))_x = 0,
+    bold(u)(x,0) = cases(bold(u)_L "if" x<0, bold(u)_R "if" x>0)
+  )
+  $<riemann_problem>
+  with two constant states $bold(u)_L$ and $bold(u)_R$.
+]
+This problem is the central building block of the Godunov method.
+
+Now consider a discontinuity between two smooth data states to travel at speed $S$ and evaluate the integral form on a control volume encompassing this discontinuity. Taking its limit yields the Rankine-Hugoniot condition, also called the jump condition: 
+
+$
+bold(F)(bold(u)_R) - bold(F)(bold(u)_L) = S (bold(u)_R - bold(u)_L)
+$
+<rankine-hugoniot>
+
+=== Shocks and Rarefactions
+
+When characteristics cross, we now approximate it by a discontinuity called a *shock*.
+This happens when a wave is faster upstream than downstream, $lambda(u_l)>lambda(u_r)$ for a scalar law.
+For fluids, a shock represents a rapid transition layer from one data state to another.
+This layer is usually of the order of the mean free path of the molecules, and thus can be approximated by a discontinuity.
+In order to determine the speed of this wave, we use the Rankine-Hugoniot conditions @rankine-hugoniot.
+
+#example[
+  For Burgers' equation, the Rankine-Hugoniot condition gives $S = 1/2 (u_r + u_l)$, that is the shock travels at the mean velocity between of the left and right data states.
+]
+
+#figure(
+  {
+    show: char-plot
+    lq.diagram(
+      height: 5cm,
+      lq.plot((0, 2), (0, 1), mark:none, color:black),
+      lq.plot((1, 2), (0, 1), mark:none, color:black),
+      lq.plot((2, 2), (0, 1), mark:none, color:black),
+      lq.plot((2, 4), (1, 3), mark:none, color:black, stroke:(1.5pt) ),
+      lq.plot((0, 2), (1, 1), mark:none, color:gray, stroke:(dash:"dashed")),
+      lq.place(-0.2,1)[$t_c$]
 
 
+    )
+  },
+  caption:[Creation of a shock]
+)
 
 
-== Hyperbolicity
+Another situation can arise when we consider discontinuities, when the characteristics do not move into, but outwards from a discontinuity. 
+For a scalar law, this happens when $lambda(u_l)<lambda(u_r)$
 
-A key aspect of all of these systems is hyperbolicity.
+#figure(
+{
+    show: char-plot
+    lq.diagram(
+      height: 5cm,
+      lq.plot((0, 1), (0, 1), mark:none, color:black, stroke:(1.5pt) ),
+      lq.plot((1, 4), (1, 3), mark:none, color:black),
+      lq.plot((1, 3), (1, 3), mark:none, color:black),
+      lq.plot((1, 2), (1, 3), mark:none, color:black),
+      lq.plot((1, 2.5), (1, 3), mark:none, color:black),
+      lq.plot((1, 3.5), (1, 3), mark:none, color:black),
+    )
+  },
+  caption:[A discontinuity diverging into multiple characteristics]
+)
 
-definition of a hyperbolic pde 
-distinction with parabolic and elliptic
+A solution would be to continue representing the wave by a discontinuity creating an expansion shock.
+This would respect the Rankine-Hugoniot condition @rankine-hugoniot but is not an acceptable solution. 
+If we try to determine the value the rays by tracing it backwards in time, we end up at the discontinuity which doesn't cary any information. This means the solution is not determined by the data. We therefore impose an additional admissibility criterion for discontinuities.
 
-time dependence and conservation laws, flux function and quasilinear form
+#definition([Lax entropy condition])[
+  A discontinuity of speed $S$ in the $lambda_i$ field is admissible if
+  $
+  lambda_i (bold(u)_L) > S > lambda_i (bold(u)_R) .
+  $
+]
 
-linear conservation laws (wave)
-non linear conservation laws (burgers')
+This means that for a dicontinuity to be admissible, the characteristics should go into the shock, which isn't the case for the expansion shock.
 
-crossing of characteristics => either rework model (add viscosity to balance out) or allow discontinuities
+The correct physical solution called a *rarefaction fan* is constructed using self-similarity, that is it doesn't change depending of the scale of the variables.
+#let tu = $tilde(u)$
+#let btu = $bold(tilde(u))$
 
-Integral form with a control volume & weak solution brings discontinuities
+For a scalar law, setting $u(x,t) = tu(xi)$, with $xi=x/t$ gives
+$
+(lambda(tu(xi)) - xi) tu'(xi) = 0
+$
+so at each point either $tu' = 0$, giving a constant state, or
+$
+lambda(tu(xi)) = xi .
+$<fan_condition>
+and for $lambda$ invertible, we obtain
+$
+tu(xi) = lambda^(-1)(xi)
+$<rarefaction_sol>
+As a discontinuous jump would have to satisfy @rankine-hugoniot, and the only such jump is the expansion shock rejected above, hence the solution must be continuous.
+This forces $btu(xi) -> u_l$ as $xi -> lambda(u_l)$ and $btu(xi) -> u_r$ as $xi -> lambda(u_r)$.
+The fan is therefore bounded by the two characteristics of slopes $lambda(u_l)$ and $lambda(u_r)$, called its _head_ and _tail_ respectively, and @rarefaction_sol gives the solution between them.
+#example[
+  For Burgers' equation $lambda(u) = u$ is the identity, so the fan is simply
+  $u = x slash t$, with head $u_l$ and tail $u_r$.
+]
 
-shocks and rarefactions, entropy condition, riemann invariants
+
+=== Generalized Riemann invariants
+
+For systems @fan_condition is not enough to determine the whole solution.
+Substituting $bold(u)(x,t) = btu(xi)$ into the quasilinear form @quasilinear gives
+
+$
+bold(A)(btu) btu'(xi) = xi btu'(xi)
+$
+
+so inside the fan $btu'$ is a right eigenvector of $bold(A)$ with eigenvalue $xi$.
+
+This yields the scalar relation $lambda_i (btu(xi)) = xi$ for one of the $m$ eigenvalues $i$ of $A$ fixed throughout the rarefaction fan.
+
+The eigenvector gives
+$
+btu'(xi) in "span"( bold(r)_i (btu)) ,
+$
+with $bold(r)_i$ the right eigenvector associated with $lambda_i$.
+
+This means there exist $alpha(xi)$ such that $btu'(xi) = alpha(xi) bold(r)_i (btu)$.
+Componentwise we get $(btu^('(j))(xi))/(bold(r)_(i)^((j))(btu(xi))) = alpha(xi)$ and multiplying by $dif xi$ gives
+$
+(btu^('(1)) dif xi)/(bold(r)_(i)^((1))(btu)) = (btu^('(2)) dif xi)/(bold(r)_(i)^((2))(btu)) = dots = (btu^('(m)) dif xi)/(bold(r)_(i)^((m))(btu)) = alpha dif xi
+$
+
+We have $btu^('(j)) dif xi = dif btu^((j))$ and droping $alpha dif xi$ gives $m-1$ relations involving only the state variables called the _Generalized Riemann Invariants_ : 
+
+$
+(dif btu^((1)))/(bold(r)_(i)^((1))(btu)) = (dif btu^((2)))/(bold(r)_(i)^((2))(btu)) = dots = (dif btu^((m)))/(bold(r)_(i)^((m))(btu))
+$<gri>
+
+
+Each equality is an ordinary differential equation in two of the state variables.
+These $m-1$ relations, together with $lambda_i (btu(xi)) = xi$, determine the solution across a rarefaction.
+
+
+=== Characteristic Fields and wave types
+
 
 
 == Numerical methods for hyperbolic systems
@@ -321,7 +461,7 @@ cases(
   bold(u)_t + F(bold(u))_(x) = 0,
   bold(u)(x,0) = cases(bold(u_L) "if" x<0, bold(u_R) "if" x>0)
 )
-$<riemann_problem>
+$<riemann_problem2>
 where the left and right states $bold(u)_L$ and $bold(u)_R$ are the cell averages of the two neighboring cells separated by the face. The flux is then given by $F(bold(u)^*(0,t))$
 
 Conceptually we are letting the fluid flow for some small timestep before taking the average of the cell.
@@ -449,7 +589,7 @@ These are generally approximated as mathematical discontinuities.
 To find the speed $S$ at which this discontinuity is moving, we use the _Rankine-Hugoniot Condition_ : 
 $
 Delta bold(f) = S Delta bold(u)
-$<rankine-hugoniot>
+$<rankine-hugoniot2>
 It is obtained by applying the integral form of the conservation law on a control volume encompassing the shock (see @toro2009Riemann, p. 70).
 
 On the other hand, rarefaction waves are created through a stretching between two states.
@@ -470,7 +610,7 @@ include image burgers
 
 To solve the Riemann problem @riemann_problem, we have to distinguish between the shock and the rarefaction case.
 
-When $u_L > u_R$ we have a shock. To compute its speed and direction, we use the _Rankine-Hugoniot Condition_ @rankine-hugoniot: 
+When $u_L > u_R$ we have a shock. To compute its speed and direction, we use the _Rankine-Hugoniot Condition_ @rankine-hugoniot2: 
 $
 1/2 (u_R^2 - u_L^2) = S (u_R - u_L)
 $
