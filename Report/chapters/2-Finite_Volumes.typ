@@ -97,7 +97,7 @@ The remaining $2 times 2$ system is called the wave system. It's specificity is 
 The burgers' equation on the other hand is a scalar non linear equation : 
 $
 u_t + u u_x = 0
-$
+$<burgers>
 as the coefficient in front of $u_x$ depends on the state $u$.
 
 This equation is the simplest non-linear conservation law, and as such is useful to study non-linearity.
@@ -108,6 +108,12 @@ Finally, a more complete system that is useful before studying the full Euler sy
 This leads to pressure being fully described by the density field, $p(rho) = kappa rho^gamma$, with $kappa$ and $gamma$ two constants. We can thus drop the last equation of the euler system.
 
 For $gamma=2$ and $kappa=g/2$ we obtain the same equations as in the Shallow Water Equations.
+
+
+
+
+
+
 
 == Hyperbolicity
 
@@ -130,19 +136,17 @@ Thus there exists an invertible matrix formed by the right eigenvectors $P(bold(
 
 
 This is especially useful for *linear* hyperbolic conservation laws as $P$ and $D$ do not depend on $bold(u)$.
-
 In that case, we can use the change of variable
 $
 bold(v) = P^(-1) bold(u)
 $
-These are called _characteristic variables_ and using them, the quasilinear form can be rewritten as a sysetem of $n$ independent advection equations : 
+These are called _characteristic variables_ and using them, the quasilinear form can be rewritten as a system of $m$ independent advection equations : 
 $
 (partial v_i)/(partial t) + lambda_(i) (partial v_i)/(partial x) = 0
-$
+$<linear_decomp>
 
 Where $lambda_(i)$ are the diagonal entries of $D$, i.e. the eigenvalues of $nabla_(bold(u)) F(bold(u))$ and are called the _characteristic speeds_.
-
-The more general non-linear case, is more complicated to solve.
+In the more general non-linear case, this can't be done as the eigenvalues depend on the state so no such decoupling of the system exists.
 
 === Relation to the classification of second order equations
 
@@ -207,14 +211,16 @@ From $(dif x)/(dif t) = c$ we obtain $x(t) = c t + x_0$, on the $x-t$ plane thes
     show: char-plot
     lq.diagram(
       height: 5cm,
-      lq.plot((0, 2), (10/4, 5), mark: none, color: black),
-      lq.plot((0, 3), (5/4, 5), mark: none, color: black),
-      lq.plot((0, 4), (0, 5), mark: none, color: black),
-      lq.plot((1, 5), (0, 5), mark: none, color: black),
-      lq.plot((2, 6), (0, 5), mark: none, color: black),
-      lq.plot((3, 7), (0, 5), mark: none, color: black),
-      lq.ellipse(2, 0, width: 0.2, height: 0.2, align: center + horizon)[$u(x_0,0)$],
-      lq.ellipse(0, 5/4, width: 0.2, height: 0.2, align: center + horizon)[$u(t,0)$],
+      lq.plot((0, 1), (2, 3), mark: none, color: black),
+      lq.plot((0, 2), (1, 3), mark: none, color: black),
+      lq.plot((0, 3), (0, 3), mark: none, color: black),
+      lq.plot((1, 4), (0, 3), mark: none, color: black),
+      lq.plot((2, 5), (0, 3), mark: none, color: black),
+      lq.plot((3, 5), (0, 2), mark: none, color: black),
+      lq.ellipse(2, 0, width: 0.2, height: 0.2, align: center + horizon),
+      lq.place(2,-0.3)[$u(x_0,0)$],
+      lq.ellipse(0, 1, width: 0.2, height: 0.2, align: center + horizon),
+      lq.place(-0.6,1)[$u(0,t)$],
     )
   },
   caption: [Characteristic curves in the $(x,t)$ plane for linear advection.],
@@ -222,7 +228,32 @@ From $(dif x)/(dif t) = c$ we obtain $x(t) = c t + x_0$, on the $x-t$ plane thes
 
 The values of $u$ on the rays are given either by the initial condition or the boundary condition.
 
-Linear hyperbolic systems can be decomposed into independent scalar advection equations on the characteristic variables. Each of these wave are then getting transported by their correspond speed given by the eigenvalues.
+Linear hyperbolic systems can be decomposed into independent scalar advection equations on the characteristic variables as detailed in @linear_decomp. Each of these variables are then getting transported by their correspond speed given by the eigenvalues.
+
+
+#figure(
+  {
+    show: char-plot
+    lq.diagram(
+      height: 5cm,
+      lq.plot((0, 1), (2, 3), mark: none, color: red),
+      lq.plot((0, 2), (1, 3), mark: none, color: red),
+      lq.plot((0, 3), (0, 3), mark: none, color: red),
+      lq.plot((1, 4), (0, 3), mark: none, color: red),
+      lq.plot((2, 5), (0, 3), mark: none, color: red),
+      lq.plot((3, 5), (0, 2), mark: none, color: red),
+
+      lq.plot((1, 0), (0, 3), mark: none, color: blue),
+      lq.plot((2, 1), (0, 3), mark: none, color: blue),
+      lq.plot((3, 2), (0, 3), mark: none, color: blue),
+      lq.plot((4, 3), (0, 3), mark: none, color: blue),
+      lq.plot((5, 4), (0, 3), mark: none, color: blue),
+    )
+  },
+  caption: [Characteristic curves for a $2 times 2$ hyperbolic system.],
+)
+
+This can be seen when simulating the wave system in 1D and watching the characteristic variables. Introducing a small difference in the initial condition, one can see one wave travelling to the left and the other to the right when viewing each characteristic variable. 
 
 Let us now consider a scalar hyperbolic conservation law $u_t + f(u)_x = 0$. For $f$ differentiable, we can write it in quasilinear form $u_t + lambda(u) u_x = 0$ with $lambda(u) = f'(u)$. If we then consider characteristic curves satisfying 
 
@@ -284,23 +315,22 @@ value problem is central to everything that follows.
 ]
 This problem is the central building block of the Godunov method.
 
-Now consider a discontinuity between two smooth data states to travel at speed $S$ and evaluate the integral form on a control volume encompassing this discontinuity. Taking its limit yields the Rankine-Hugoniot condition, also called the jump condition: 
-
+Now consider a discontinuity between two smooth states to travel at speed $S$ and evaluate the integral form on a control volume encompassing this discontinuity.
+Taking its limit yields the Rankine-Hugoniot condition, also called the jump condition (see @toro2009Riemann, p. 70): 
 $
 bold(F)(bold(u)_R) - bold(F)(bold(u)_L) = S (bold(u)_R - bold(u)_L)
-$
-<rankine-hugoniot>
+$<rankine-hugoniot>
 
 === Shocks and Rarefactions
 
 When characteristics cross, we now approximate it by a discontinuity called a *shock*.
-This happens when a wave is faster upstream than downstream, $lambda(u_l)>lambda(u_r)$ for a scalar law.
+This happens when a characteristic on the left is faster than on the right, $lambda(u_l)>lambda(u_r)$ for a scalar law.
 For fluids, a shock represents a rapid transition layer from one data state to another.
 This layer is usually of the order of the mean free path of the molecules, and thus can be approximated by a discontinuity.
-In order to determine the speed of this wave, we use the Rankine-Hugoniot conditions @rankine-hugoniot.
+Determining the speed $S$ of this wave is solving the Riemann problem @riemann_problem. This can be solved using the Rankine-Hugoniot conditions @rankine-hugoniot.
 
 #example[
-  For Burgers' equation, the Rankine-Hugoniot condition gives $S = 1/2 (u_r + u_l)$, that is the shock travels at the mean velocity between of the left and right data states.
+  For Burgers' equation, the Rankine-Hugoniot condition gives $S = 1/2 (u_r + u_l)$, that is the shock travels at the mean velocity between the left and right states.
 ]
 
 #figure(
@@ -323,7 +353,7 @@ In order to determine the speed of this wave, we use the Rankine-Hugoniot condit
 
 
 Another situation can arise when we consider discontinuities, when the characteristics do not move into, but outwards from a discontinuity. 
-For a scalar law, this happens when $lambda(u_l)<lambda(u_r)$
+For a scalar law, this happens when $lambda(u_l)<lambda(u_r)$ and the problem is again given by the Riemann problem @riemann_problem.
 
 #figure(
 {
@@ -338,12 +368,12 @@ For a scalar law, this happens when $lambda(u_l)<lambda(u_r)$
       lq.plot((1, 3.5), (1, 3), mark:none, color:black),
     )
   },
-  caption:[A discontinuity diverging into multiple characteristics]
+  caption:[A discontinuity diverging into multiple characteristics, leaving a region undetermined]
 )
 
 A solution would be to continue representing the wave by a discontinuity creating an expansion shock.
 This would respect the Rankine-Hugoniot condition @rankine-hugoniot but is not an acceptable solution. 
-If we try to determine the value the rays by tracing it backwards in time, we end up at the discontinuity which doesn't cary any information. This means the solution is not determined by the data. We therefore impose an additional admissibility criterion for discontinuities.
+If we try to determine the value on the rays by tracing it backwards in time, we end up at the discontinuity which doesn't carry any information. We therefore impose an additional admissibility criterion for discontinuities.
 
 #definition([Lax entropy condition])[
   A discontinuity of speed $S$ in the $lambda_i$ field is admissible if
@@ -352,7 +382,7 @@ If we try to determine the value the rays by tracing it backwards in time, we en
   $
 ]
 
-This means that for a dicontinuity to be admissible, the characteristics should go into the shock, which isn't the case for the expansion shock.
+This means that for a discontinuity to be admissible, the characteristics should go into the shock, which isn't the case for the expansion shock.
 
 The correct physical solution called a *rarefaction fan* is constructed using self-similarity, that is it doesn't change depending of the scale of the variables.
 #let tu = $tilde(u)$
@@ -370,8 +400,8 @@ and for $lambda$ invertible, we obtain
 $
 tu(xi) = lambda^(-1)(xi)
 $<rarefaction_sol>
-As a discontinuous jump would have to satisfy @rankine-hugoniot, and the only such jump is the expansion shock rejected above, hence the solution must be continuous.
-This forces $btu(xi) -> u_l$ as $xi -> lambda(u_l)$ and $btu(xi) -> u_r$ as $xi -> lambda(u_r)$.
+A discontinuous jump would have to satisfy @rankine-hugoniot, and the only such jump is the expansion shock rejected above, hence the solution must be continuous.
+This forces $tu(xi) -> u_l$ as $xi -> lambda(u_l)$ and $tu(xi) -> u_r$ as $xi -> lambda(u_r)$.
 The fan is therefore bounded by the two characteristics of slopes $lambda(u_l)$ and $lambda(u_r)$, called its _head_ and _tail_ respectively, and @rarefaction_sol gives the solution between them.
 #example[
   For Burgers' equation $lambda(u) = u$ is the identity, so the fan is simply
@@ -379,49 +409,138 @@ The fan is therefore bounded by the two characteristics of slopes $lambda(u_l)$ 
 ]
 
 
-=== Generalized Riemann invariants
+=== The Riemann problem for non-linear hyperbolic systems
 
-For systems @fan_condition is not enough to determine the whole solution.
+Now that we looked into non-linear scalar quasi-linear forms, let us now look how systems behave on Riemann problems.
+Instead of having only one characteristics, systems have several, ordered by their respective speed $lambda_1 (bold(u)) <= dots <= lambda_i (bold(u)) <= dots <= lambda_(m)(bold(u))$.
+Assuming strict hyperbolicity, the eigenvalues are distinct and each family is associated with a single eigenvector direction. Each family then produces one wave separating two constant states.
+#figure(
+{
+    show: char-plot
+    lq.diagram(
+      height: 5cm,
+      lq.plot((2, 5), (0, 3), mark:none, color:black),
+      lq.plot((2, 4), (0, 3), mark:none, color:black),
+      lq.plot((2, 3), (0, 3), mark:none, color:black),
+      lq.plot((2, 2), (0, 3), mark:none, color:black),
+      lq.plot((2, 1), (0, 3), mark:none, color:black),
+      lq.plot((2, 1), (0, 3), mark:none, color:black),
+      lq.place(1,0.5)[$bold(u)_L = bold(u)^((0))$],
+      lq.place(4,0.5)[$bold(u)_R = bold(u)^((m))$],
+      lq.place(1.6,2.5)[$bold(u)^((1))$],
+      lq.place(2.5,2.5)[$bold(u)^((2))$],
+      lq.place(3.3,2.5)[$bold(u)^((dots))$],
+      lq.place(4.2,2.5)[$bold(u)^((m minus 1))$],
+    )
+  },
+  caption:[Example solution to the Riemann problem for a hyperbolic system of conservation laws]
+)
+In order to find the solution to @riemann_problem, we have to find each of these $m-1$ intermediate states as we have $m+1$ regions and we know the left and the right one.
+In total that represents $m(m-1)$ unknowns as each unknown intermediate state has $m$ components.
+// Each wave leaves exactly one freee parameter, and there are m wave so  m scalar unknowns.
+
+Let us look at a specific characteristic family $i$.
+It separates two states $bold(u)^((i-1))$ on the left and $bold(u)^((i))$ on the right.
+We have $bold(u)^((0)) = u_L$ and $bold(u)^((m)) = u_R$.
+As seen for the scalar case, if the associated characteristic speed  on the left is greater than the right one $lambda_i (bold(u)^((i-1))) > lambda_i (bold(u)^((i)))$, we get a shock. The Rankine-Hugoniot conditions give us $m$ equations. If we know one of the two data states, this still leaves one unknown as we have to also determine the shock speed $S$.
+
+If instead the left characteristic is smaller than the right one, we get a rarefaction fan. 
 Substituting $bold(u)(x,t) = btu(xi)$ into the quasilinear form @quasilinear gives
 
 $
 bold(A)(btu) btu'(xi) = xi btu'(xi)
-$
+$<rarefaction_self_similar_sys>
 
 so inside the fan $btu'$ is a right eigenvector of $bold(A)$ with eigenvalue $xi$.
-
 This yields the scalar relation $lambda_i (btu(xi)) = xi$ for one of the $m$ eigenvalues $i$ of $A$ fixed throughout the rarefaction fan.
-
-The eigenvector gives
+As for the scalar case, this gives us the solution inside the fan when $lambda_i$ is invertible : $btu(xi) = lambda_(i)^(-1)(xi)$.
+But we still want to find a relationship between the left and right data states $bold(u)^((i-1))$ and $bold(u)^((i))$.
+Let us use the other information provided by @rarefaction_self_similar_sys, $btu'(xi)$ is an eigenvector of $bold(A)$ associated with the eigenvalue $lambda_i$ as such we have :
 $
 btu'(xi) in "span"( bold(r)_i (btu)) ,
 $
 with $bold(r)_i$ the right eigenvector associated with $lambda_i$.
-
 This means there exist $alpha(xi)$ such that $btu'(xi) = alpha(xi) bold(r)_i (btu)$.
 Componentwise we get $(btu^('(j))(xi))/(bold(r)_(i)^((j))(btu(xi))) = alpha(xi)$ and multiplying by $dif xi$ gives
 $
 (btu^('(1)) dif xi)/(bold(r)_(i)^((1))(btu)) = (btu^('(2)) dif xi)/(bold(r)_(i)^((2))(btu)) = dots = (btu^('(m)) dif xi)/(bold(r)_(i)^((m))(btu)) = alpha dif xi
 $
-
-We have $btu^('(j)) dif xi = dif btu^((j))$ and droping $alpha dif xi$ gives $m-1$ relations involving only the state variables called the _Generalized Riemann Invariants_ : 
-
+We have $btu^('(j)) dif xi = dif btu^((j))$ and dropping $alpha dif xi$ gives $m-1$ relations involving only the state variables called the _Generalized Riemann Invariants_ : 
 $
 (dif btu^((1)))/(bold(r)_(i)^((1))(btu)) = (dif btu^((2)))/(bold(r)_(i)^((2))(btu)) = dots = (dif btu^((m)))/(bold(r)_(i)^((m))(btu))
 $<gri>
-
-
 Each equality is an ordinary differential equation in two of the state variables.
-These $m-1$ relations, together with $lambda_i (btu(xi)) = xi$, determine the solution across a rarefaction.
+These $m-1$ relations give us a way to associate $m-1$ variables from the left state to the right state, leaving one undetermined as in the shock case.
 
+Finally in systems we can have one more case, $lambda_i (bold(u)^((i-1))) = lambda_i (bold(u)^((i)))$ with $bold(u)^((i-1)) != bold(u)^((i))$ we get a discontinuity that is neither a shock nor a rarefaction. 
+This can't happen in the scalar case when we assume the flux to be convex or concave.
+The characteristic speed is given if we know either state across the discontinuity, $S = lambda_i (bold(u)^((i))) = lambda_i (bold(u)^((i-1)))$. 
+The Rankine Hugoniot conditions apply as we have a discontinuity and so do the Generalized Riemann Invariants.
+For such waves, we have enough equations to determine one state from the other unlike shocks and rarefactions.
 
 === Characteristic Fields and wave types
 
+Now we have seen 3 types of wave encountered in one dimensional non-linear hyperbolic conservation laws. We have _contact_ waves, _shock_ wave and _rarefaction_ waves.
+
+The one dimensional equations studied during this internship have the property to only have such waves.
+Furthermore, we can categorize the waves by the type of the field defined by each eigenvalue $lambda(bold(u))$ in state space.
+
+#definition([Linearly degenerate fields])[ A $lambda_i$-field is called _linearly degenerate_ if 
+$
+nabla_(bold(u)) lambda_i (bold(u)) dot bold(r)_i (bold(u)) = 0, quad forall bold(u) in RR^m
+$
+]
+This means that $lambda_(i)(bold(u))$ is constant along the direction $bold(r)_i$ which is the only one the state varies across the $i$-th wave. 
+Such fields can only produce contact waves.
+
+#definition([Genuinely non-linear fields])[ A $lambda_i$-field is called _genuinely non-linear_ if 
+$
+nabla_(bold(u)) lambda_i (bold(u)) dot bold(r)_i (bold(u)) != 0, quad forall bold(u) in RR^m
+$
+]
+
+This means that $lambda_(i)(bold(u))$ is strictly monotone along the direction $"span"(bold(r)_i)$, which again is the only one the state varies across the $i$-th wave. 
+Such fields generate either shocks or rarefactions and cannot change their wave type.
+This also ensures that $lambda_i$ is invertible and thus make the solutions for rarefactions possible.
+
+One can also have fields that are neither linearly degenerate nor genuinely non-linear creating composite waves. These are encountered in more complicated settings like MHD and do not appear in the classical Euler equations.
+For the scalar case, this reduces to assuming that the flux functions are either linear, concave or convex.
+
+=== Analysis of the Euler equations
+The conservative formulation of the Euler equations @Euler_cons can be rewritten in quasi-linear form using the Jacobian of the flux $nabla_bold(u) bold(F)(bold(u))$ as 
+$
+bold(u)_t + nabla_bold(u) bold(F)(bold(u))bold(u)_x = 0
+$
+
+Its eigenvalues are
+$
+lambda_1 = u-a, quad lambda_2 = u " and " lambda_3 = u+a
+$
+and the associated right eigenvectors are
+$
+bold(r)_1 = vec(1, u-a, H-u a) , quad bold(r)_2 = vec(1, u, 1/2 u^2) " and " bold(r)_3 = vec(1, u+a, H+u a)
+$
+where $H = (E+p)/rho$ the total specific enthalpy and $a = sqrt((gamma p)/rho)$ the sound speed.
+For the computations see @toro2009Riemann pp. 87-90.
+
+Computing $nabla lambda_i(bold(u)) dot bold(r)_i$, we get that the $lambda_1$ and $lambda_3$ fields are genuinely non-linear.
+The waves generated by these two fields are called _accoustic waves_ and $rho, u "and" p$ either change smoothly for a rarefaction or discontinuously for shocks.
+On the other hand the $lambda_2$ field is linearly degenerate.
+It's generated wave is called the _entropy wave_ and only the density jumps discontinuously while the pressure and the particle velocity stay constant.
+As $a>0$, we have that $lambda_1 < lambda_2 < lambda_3$ so the structure of the solution to the Riemann problem will consist of a contact wave surrounded by two non-linear waves (shocks and/or rarefactions).
+
+Until now we only looked at one dimensional systems.
+If we introduce additional spatial dimensions, the eigenvalue $u_n$ (velocity normal to the considered direction) is not of multiplicity one any more and we loose strict hyperbolicity.
+This linearly degenerate field now carries multiple waves, the entropy wave wich is a density jump and the shear waves wich are tangential velocity jumps.
+
+Finally we will also consider the isentropic euler equations that drops the energy equation which removes the entropy wave.
+We are left with the accoustic and the shear waves.
+Thus it stays strictly hyperbolic up to two dimensions.
 
 
 == Numerical methods for hyperbolic systems
 
-Following the book on Riemann Solvers by Toro @toro2009Riemann we will implement the Godunov method. It is designed to solve hyperbolic systems of partial differential equations, like the Euler system.
+Now we will look at the Godunov method, a finite-volumes method designed to solve hyperbolic systems of partial differential equations, like the Euler system.
 
 === The finite volumes method <finite_volumes>
 #let ub = $bold(overline(u))$
@@ -452,17 +571,10 @@ It is left to choose a numerical approximation for the integral, a timestepping 
 === Godunov's method
 
 In 1959, Godunov developed a first-order finite volume method for non-linear hyperbolic conservation laws like the Euler system @godunovFinite. 
-Hyperbolicity means that the jacobians $nabla bold(F_i)(bold(u))$ have $m$ real eigenvalues and $m$ linearly independent right eigenvectors. It ensure the conservation law is well posed.
 
 The method considers piecewise constant approximation using the cell averages $ub = 1/abs(V) integral_V bold(u) dif V$.
-To compute the fluxes it uses an exact one dimensional Riemann solver, that is an algorithm that can find $bold(u)^*(x,t)$ solution of the Riemann problem: 
-$
-cases(
-  bold(u)_t + F(bold(u))_(x) = 0,
-  bold(u)(x,0) = cases(bold(u_L) "if" x<0, bold(u_R) "if" x>0)
-)
-$<riemann_problem2>
-where the left and right states $bold(u)_L$ and $bold(u)_R$ are the cell averages of the two neighboring cells separated by the face. The flux is then given by $F(bold(u)^*(0,t))$
+To compute the fluxes it uses an exact one dimensional Riemann solver, that is an algorithm that can find $bold(u)^*(x,t)$, the solution of the Riemann problem @riemann_problem.
+The left and right states $bold(u)_L$ and $bold(u)_R$ are the cell averages of the two neighboring cells separated by the face and the numerical flux is given by $F(bold(u)^*(0,t))$, evaluating the solution on the curve $x/t = 0$.
 
 Conceptually we are letting the fluid flow for some small timestep before taking the average of the cell.
 As we add and subtract the same amount, the flux, between two cells, this method is conservative.
@@ -477,7 +589,7 @@ $
 Delta t = C_"cfl" (Delta x_i) / max(abs(lambda))
 $
 
-Godunov only presented this method for structured meshes, where each direction has its own flux function $F_i$. Under the condition that the system is _rotationally invariant_, this approach is generalized to unstructured meshes. Using the rotation matrix $T(bold(n))$ that transforms vector components aligning them with the normal coordinate axis and leaves the scalar component unchanged, we get : 
+Godunov only presented this method for structured meshes, where each direction has its own flux function $F_i$. Under the condition that the system is _rotationally invariant_, which the Euler equations are, this approach is generalized to unstructured meshes. Using the rotation matrix $T(bold(n))$ that transforms vector components aligning them with the normal coordinate axis and leaves the scalar component unchanged, we get : 
 
 $
 sum_i F_i (bold(u)) n_i = T(bold(n))^(-1) F_1 (T(bold(n)) bold(u))
@@ -502,32 +614,21 @@ $
 // CFL in multi-d ? voir cours chap 3.
 // faire les calculs pour euler
 
-=== Exact Riemann solvers
-
-Now lets see how to solve the Riemann problem @riemann_problem.
-We are considering hyperbolic conservation laws, so the Jacobian $nabla F(bold(u)) = mat((partial u_1)/(partial u_1), dots,(partial u_1)/(partial u_n);, dots.down,;(partial u_n)/(partial u_1), dots, (partial u_n)/(partial u_n))$ is diagonalizable with real eigenvalues. // proof?
-Thus there exists an invertible matrix $P(bold(u))$ and a diagonal matrix $D(bold(u))$ such that $nabla F(bold(u)) = P(bold(u)) D(bold(u)) P(bold(u))^(-1)$.
-
-We call _characteristic variables_ the components of the vector 
-$
-bold(v) = P(bold(u))^(-1) bold(u)
-$<characteristics>.
-Using them, the conservation law can be rewritten as : 
-$
-bold(v)_t + D(bold(u)) bold(v)_x = 0
-$
-which separates the system into $n$ independent equations of the form:
-$
-(partial v_i)/(partial t) + lambda_(i)(bold(u)) (partial v_i)/(partial x) = 0
-$
-
-Where $lambda_(i)(bold(u))$ are the diagonal entries of $D(bold(u))$, i.e. the eigenvalues of $nabla F(bold(u))$. They are called the _characteristic speeds_.
-
-
-
 ==== Riemann solvers for linear systems <riemann_linear>
 
-When the system is linear, $D$ doesn't depend on $bold(u)$ and we have independent transport equations with an advection speed $d_i$. Now to find $bold(u^*)$, we have to look at the upwind direction, that is the direction in which information is travelling. If $d_i>0$ the flow goes to the right then $u_i^* = u_(L,i)$ on the contrary if $d_i<0$, $u_i^* = u_(R,i)$. Doing this for all the equations we can construct $bold(u)^*$ and compute the flux as $F(bold(u^*))$.
+When the system is linear we have independent transport equations on the characteristic variables $bold(v)_i$ each advected with a speed $lambda_i$. 
+The solution to the individual Riemann problems are given by
+$
+bold(v)_i (x,t) = cases(
+  bold(v)_(L,i) "if" x/t > lambda_(i),
+  bold(v)_(R,i) "else",
+)
+$
+The full solution is then just a superposition of all these individual solution, $bold(u)(x,t) = sum bold(v)_i (x,t)$.
+Finally the flux is computed by $F(bold(u)(0,t))$.
+
+This can be simplified, as we are only interested in $bold(u)(0,t)$ we can only determine $bold(v)_(i)(0,t)$
+If $lambda_i>0$ the flow goes to the right then $bold(v)_i = bold(v)_(L,i)$ on the contrary if $lambda_i<0$, $bold(v)_i = v_(R,i)$.
 
 
 #example("The wave equations")[
@@ -536,8 +637,8 @@ The wave equations is a one-dimensional linear system :
 
 $
 cases(
-  p_t + 1/rho u_x &= 0,
-  u_t + kappa p_x &= 0
+  u_t + 1/rho p_x &= 0,
+  p_t + kappa u_x &= 0
 )
  
 $
@@ -546,7 +647,7 @@ $
 bold(u)_t + F(bold(u))_x = 0
 $
 
-with $bold(u) = vec(p,u)$ and $F(bold(u)) = vec(1/rho u, kappa p)$
+with $bold(u) = vec(u,p)$ and $F(bold(u)) = vec(1/rho p, kappa u)$
 
 Diagonalizing the Jacobian gives : 
 $
@@ -559,7 +660,7 @@ $<linear_cons>
 
 The characteristic variables are : 
 $
-bold(v) = mat(1/2, 1/(2 rho c); 1/2, -1/(2 rho c)) bold(u) = vec(p/2 + u/(2 rho c), p/2 - u/(2 rho c))
+bold(v) = mat(1/2, 1/(2 rho c); 1/2, -1/(2 rho c)) bold(u) = vec(u/2 + p/(2 rho c), u/2 - p/(2 rho c))
 $
 and we can write :
 
@@ -569,48 +670,23 @@ $
 
 We obtain two independent transport equations for each characteristic variable. One is advected to the right with characteristic speed $c$ and the other is advected to the left with a characteristic speed $-c$.
 Finally we can use the upwind method and compute the flux.
-
+$
+F(u(0,t)) = 
+$
 ]
+
 
 ==== Riemann Solvers for non-linear systems
 
-A more complicated case arises when the characteristic speeds depend on $bold(u)$. This results in non-linear relationships between the state $bold(u)$ and the flux.
-// The flow can then have different forms depending on its monotonicity : 
-//
-// - when $d(u)$ is monotonically increasing, i.e. $d'(u)>0$, the flow is *convex*.
-// - when $d(u)$ is monotonically decreasing, i.e. $d'(u)<0$, the flow is *concave*.
-// - finally, when $d(u)$ admits and extrema, i.e. $exists u | d'(u) = 0$, the flow is neither convex nor concave.
-Still the approach stays similar to the linear case as we look at the orientation of the flow to determine the upwind direction.
-But contrary to the linear case, wave distortion can arise from the difference of $d(bold(u))$ between two neighboring points. 
-This can lead to the creation of shock and rarefaction waves.
-
-Shock waves are thin layers where properties change very rapidly.
-These are generally approximated as mathematical discontinuities.
-To find the speed $S$ at which this discontinuity is moving, we use the _Rankine-Hugoniot Condition_ : 
-$
-Delta bold(f) = S Delta bold(u)
-$<rankine-hugoniot2>
-It is obtained by applying the integral form of the conservation law on a control volume encompassing the shock (see @toro2009Riemann, p. 70).
-
-On the other hand, rarefaction waves are created through a stretching between two states.
-To solve it we can't use a discontinuity like in the shock case as this would violate the entropy condition and lead to instabilities.
-Instead the rarefaction is modelled by two different waves the head and the tail. The solution inside of the rarefaction fan can then be determined using the self similarity condition and the Generalized Riemann invariants.
+As we know a more complicated case arises when the characteristic speeds depend on $bold(u)$ resulting in non-linear relationships between the state $bold(u)$ and the flux.
+For the scalar case with a convex or concave flux, we have to distinguish between shocks and rarefactions.
+We solve them using either the Rankine-Hugoniot conditions or the self similarity solution.
 
 #example("Burgers' equation")[
 
-  The Burgers' equation is given by
-$
-u_t + F(u)_x = 0
-$
-with $F(u) = 1/2 u^2$ and $(partial F(u))/(partial u) = u$. 
+  The Burgers' equation is given by @burgers is a non linear scalar conservation law with a convex flux.
 
-Here the propagation speed depends on the value of $u$ and the flow is non-linear.
-
-include image burgers
-
-To solve the Riemann problem @riemann_problem, we have to distinguish between the shock and the rarefaction case.
-
-When $u_L > u_R$ we have a shock. To compute its speed and direction, we use the _Rankine-Hugoniot Condition_ @rankine-hugoniot2: 
+When $u_L > u_R$ we have a shock. To compute its speed and direction, we use the _Rankine-Hugoniot Condition_ @rankine-hugoniot: 
 $
 1/2 (u_R^2 - u_L^2) = S (u_R - u_L)
 $
@@ -636,60 +712,16 @@ u(x,t) = cases(
               )
 $
 
-finally we sample the result at $u^* = u(0, t)$ and compute the flux as $f(u^*)$.
+finally we sample the result at $u(0, t)$ and compute the flux as $f(u(0,t)) = u(0,t)$.
 ]<exampleburger>
 
-// this part I am not sure
-For systems, we have to look at the field of each characteristic@characteristics. 
-An eigenvalue $lambda_(i)(bold(u)(bold(x),t))$ characterises the speed of a wave in the physical space ($x-t$). It is associated with a corresponding right eigenvector $bold(K)_(i)(bold(u))$, that defines the paths of the wave in phase space.
-
-A $lambda_i$-characteristic field is called _linearly degenerate_ when 
-$
-nabla lambda_(i)(bold(u)) dot bold(k)_(i)(bold(u)) = 0, quad forall bold(u) in RR^m
-$
-
-this means that the evolution of this wave doesn't affect its speed. Discontinuities on such field are called contact waves. On the other hand, we call a $lambda_i$-characteristic field _genuinely non-linear_ when 
-$
-nabla lambda_(i)(bold(u)) dot bold(k)_(i)(bold(u)) != 0, quad forall bold(u) in RR^m
-$
-
-in that case, the evolution of the wave affects its speed and a discontinuity on such field creates either shocks or rarefactions.
-
+Solving non-linear system on the other hand is more complicated and we have to use more tools.
 For more details look at the end of chapter 2 of the book by Toro @toro2009Riemann (pp. 76-85).
 
 ==== The exact Riemann Solver for the Euler equations <exact_riemann>
 
-Now let's study the one-dimensional euler equation in order to determine the solution to the associated Riemann Problems. 
-// The conservative form of the euler equations is 
-// $
-// bold(u) + bold(F)(bold(u))_x = 0
-// $
-// with $bold(u) = vec(rho, rho u, E)$ the conserved variables and $bold(F)(bold(u)) = vec(rho u, rho u^2 + p, (E + p) u)$ the flux vector. The total energy per unit volume is given by $E = rho(1/2 u^2 + e)$, with $e$ the specific internal energy given by an equation of state. For ideal gases one has $ e(rho, p) = p/((gamma-1)rho)$, with $gamma = c_p/c_v$ the ratio of specific heats.
-//
-The conservative formulation @Euler_cons can be rewritten in quasi-linear form using the Jacobian of the flux $nabla_bold(u) bold(F)(bold(u))$ as 
-$
-bold(u)_t + nabla_bold(u) bold(F)(bold(u))bold(u)_x = 0
-$
-
-Its eigenvalues are
-$
-lambda_1 = u-a, quad lambda_2 = u " and " lambda_3 = u+a
-$
-and the associated right eigenvectors are
-$
-bold(k)_1 = vec(1, u-a, H-u a) , quad bold(k)_2 = vec(1, u, 1/2 u^2) " and " bold(k)_3 = vec(1, u+a, H+u a)
-$
-where $H = (E+p)/rho$ the total specific enthalpy and $a = sqrt((gamma p)/rho)$ the sound speed. For the computations see @toro2009Riemann pp. 87-90.
-
-Computing $nabla lambda_i(bold(u)) dot bold(k)_i$, we get that the $lambda_1$ and $lambda_3$ fields are genuinely non-linear and that the $lambda_2$ field is linearly degenerate.
-As $a>0$, we have that $lambda_1 < lambda_2 < lambda_3$ so the structure of the solution to the Riemann problem will consist of a contact wave surrounded by two non-linear waves (shocks and/or rarefactions).
-
-Accross the contact wave, the pressure and particle velocity are constant and the density jumps discontinuously.
-Accross rarefaction waves, $rho, u "and" p$ change smoothly.
-Finally accross a shock wave, $rho, u "and" p$ change very rapidly.
-
-The solution to the Riemann problem has 4 regions, on the left side of the left non-linear wave, we have $bold(u)_L$, then on the right side of the right nonlinear wave, we have $bold(u)_R$.
-The region in between the two non linear waves is called the _star region_, it is split in two by the contact wave.
+As seen when stuyding the Euler equations, the solution to the Riemann problem has 4 regions, on the left side of the left non-linear wave, we have $bold(u)_L$, then on the right side of the right nonlinear wave, we have $bold(u)_R$.
+The region in between the two non linear waves is called the _star region_, it is split in two by a contact wave.
 Pressure and particle velocity are constant in the star region but density changes accross the contact wave.
 We thus have to determine the 4 unknowns $rho_L^*, rho_R^*, u^* "and" p^* $ as well as the left and right non linear waves (shock speed and the solution inside the rarefaction fans).
 
@@ -770,12 +802,6 @@ This solver is exact but may not be computationally friendly for big problems as
 
 
 ==== Approximate Riemann Solvers for the Euler system
-
-==== Exact Riemann solver for the Barotropic Euler equations
-
-We have $U = vec(rho, rho u)$ and $F(U) = vec(rho u, rho u + kappa rho^gamma)$.
-
-
 
 === Managing Boundary conditions
 
