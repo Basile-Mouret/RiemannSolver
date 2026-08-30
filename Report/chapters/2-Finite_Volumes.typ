@@ -46,7 +46,10 @@ These are called the _primitive_ variables, but in order to compute them we use 
 
 - the *density* $rho (bold(x),t)$
 - the *momentum vector* $bold(m)  (bold(x),t) = rho bold(v)$
-- the *total energy per unit volume* $E(bold(x), t)$
+- the *total energy per unit volume* $E(bold(x), t) = rho(1/2 bold(v) dot bold(v) + e)$
+
+with $e$ the *specific internal energy* that is determined using thermodynamical laws (EOS). 
+We are gonna use the EOS for ideal gases given by $e(rho, p) = p/((gamma-1)rho)$.
 
 Using the fundamental laws of conservation of mass, Newton second law and the conservation of Energy we get the Euler equations governing inviscid compressible fluids on the _conserved variables_ : 
 $
@@ -57,8 +60,6 @@ cases(
 )
 $ 
 
-where $E = rho(1/2 bold(v) dot bold(v) + e)$, with $e$ the *specific internal energy* that is determined using thermodynamical laws (EOS). 
-We will study ideal gases, for which we have $e(rho, p) = p/((gamma-1)rho)$.
 
 The system can be rewritten in conservative form : 
 $
@@ -67,16 +68,15 @@ $<Euler_cons>
 with $bold(u) = vec(rho, rho u, rho v, rho w, E), quad bold(F)(bold(u)) = vec(rho u, rho u^2 + p, rho u v, rho u w, (E + p) u), quad bold(G)(bold(u)) = vec(rho v, rho u v, rho v^2 + p, rho v w, (E + p) v) "and" bold(H)(bold(u)) = vec(rho w, rho u w, rho v w, rho w^2 + p, (E + p) w)$
 
 $bold(u)$ is the column vector of conserved variables and $bold(F), bold(G), bold(H)$ are the _flux vectors_ in the $x, y, z$ directions respectively.
-
 This is a system of differential equations and thus assumes smooth solutions (partial derivatives exist). In order to handle discontinuous solutions we will need to rewrite it in integral form.
 === Submodels <submodels>
 
 There exists a lot of derived systems obtained from simplifications on the Euler equations.
-These are useful to analyze each of aspect of the full system individually as it has a lot of specificities.
+These can be used to analyze each aspect of the full system individually and reduce computation when approximations can be made.
 
 ==== Linear Waves and Linear Advection
 
-Let us consider a linearization of the euler equation around a state at rest $bold(v) = vec(rho_0, 0, p_0)$ in which we introduce a small disturbance : $bold(v') = vec(rho', u', p')$.
+Let us consider a linearization of the Euler equation around a state at rest $bold(v) = vec(rho_0, 0, p_0)$ in which we introduce a small disturbance : $bold(v') = vec(rho', u', p')$.
 
 When simplifying derivatives of constants and higher order terms, the one dimensional Euler equation becomes 
 $
@@ -90,30 +90,25 @@ with $a_0 = sqrt((gamma p_0)/rho_0)$ the speed of sound.
 
 As $rho'$ only appear in the first equation, it is fully determined by integrating $rho_0 u'_x$ over time.
 
-The remaining $2 times 2$ system is called the wave system. It's specificity is that it combines two underlying linear waves travelling in opposite direction. This drops the non linearity in the full euler system, as the coefficient $(1/rho_0)$ and $rho_0 a_0^2$ are constants independent from $bold(v')$. In order to solve it, it is useful to decompose it into two independent scalar equations.
+The remaining $2 times 2$ system is called the wave system.
+It's specificity is that it combines two underlying linear waves travelling in opposite direction.
+This drops the non linearity in the full euler system, as the coefficient $(1/rho_0)$ and $rho_0 a_0^2$ are constants independent from the state vector $bold(v')$.
+
 
 ==== Burgers' Equation
 
-The burgers' equation on the other hand is a scalar non linear equation : 
+The burgers' equation on the other hand is a scalar non linear equation as the coefficient in front of $u_x$ depends on the state $u$ :
 $
 u_t + u u_x = 0
 $<burgers>
-as the coefficient in front of $u_x$ depends on the state $u$.
-
 This equation is the simplest non-linear conservation law, and as such is useful to study non-linearity.
 
 ==== Isentropic Euler Equations
 
-Finally, a more complete system that is useful before studying the full Euler system are obtained when assuming a constant entropy, $dif S = 0$.
+Finally, a more complete system before jumping to the full Euler system is obtained when assuming a constant entropy, $dif S = 0$.
 This leads to pressure being fully described by the density field, $p(rho) = kappa rho^gamma$, with $kappa$ and $gamma$ two constants. We can thus drop the last equation of the euler system.
 
 For $gamma=2$ and $kappa=g/2$ we obtain the same equations as in the Shallow Water Equations.
-
-
-
-
-
-
 
 == Hyperbolicity
 
@@ -313,7 +308,7 @@ value problem is central to everything that follows.
   $<riemann_problem>
   with two constant states $bold(u)_L$ and $bold(u)_R$.
 ]
-This problem is the central building block of the Godunov method.
+This problem is the main building block of the Godunov method.
 
 Now consider a discontinuity between two smooth states to travel at speed $S$ and evaluate the integral form on a control volume encompassing this discontinuity.
 Taking its limit yields the Rankine-Hugoniot condition, also called the jump condition (see @toro2009Riemann, p. 70): 
@@ -437,7 +432,7 @@ Assuming strict hyperbolicity, the eigenvalues are distinct and each family is a
 )
 In order to find the solution to @riemann_problem, we have to find each of these $m-1$ intermediate states as we have $m+1$ regions and we know the left and the right one.
 In total that represents $m(m-1)$ unknowns as each unknown intermediate state has $m$ components.
-// Each wave leaves exactly one freee parameter, and there are m wave so  m scalar unknowns.
+// Each wave leaves exactly one free parameter, and there are m wave so  m scalar unknowns.
 
 Let us look at a specific characteristic family $i$.
 It separates two states $bold(u)^((i-1))$ on the left and $bold(u)^((i))$ on the right.
@@ -512,11 +507,13 @@ $
 bold(u)_t + nabla_bold(u) bold(F)(bold(u))bold(u)_x = 0
 $
 
-Its eigenvalues are
+The eigenvalues of the Jacobian are
 $
 lambda_1 = u-a, quad lambda_2 = u " and " lambda_3 = u+a
 $
-and the associated right eigenvectors are
+which are real and distinct as long as $a!=0$. 
+The Euler equation are thus Hyperbolic.
+The associated right eigenvectors are
 $
 bold(r)_1 = vec(1, u-a, H-u a) , quad bold(r)_2 = vec(1, u, 1/2 u^2) " and " bold(r)_3 = vec(1, u+a, H+u a)
 $
@@ -530,17 +527,16 @@ It's generated wave is called the _entropy wave_ and only the density jumps disc
 As $a>0$, we have that $lambda_1 < lambda_2 < lambda_3$ so the structure of the solution to the Riemann problem will consist of a contact wave surrounded by two non-linear waves (shocks and/or rarefactions).
 
 Until now we only looked at one dimensional systems.
-If we introduce additional spatial dimensions, the eigenvalue $u_n$ (velocity normal to the considered direction) is not of multiplicity one any more and we loose strict hyperbolicity.
+If we introduce additional spatial dimensions, the eigenvalue $u_n$ (velocity normal to the considered direction) is not of multiplicity one any more and we lose strict hyperbolicity.
 This linearly degenerate field now carries multiple waves, the entropy wave wich is a density jump and the shear waves wich are tangential velocity jumps.
 
-Finally we will also consider the isentropic euler equations that drops the energy equation which removes the entropy wave.
-We are left with the accoustic and the shear waves.
-Thus it stays strictly hyperbolic up to two dimensions.
+Finally we will also consider the isentropic Euler equations that drops the energy equation removing the entropy wave.
+We are left with only the accoustic and shear waves and it stays strictly hyperbolic up to two dimensions.
 
 
 == Numerical methods for hyperbolic systems
 
-Now we will look at the Godunov method, a finite-volumes method designed to solve hyperbolic systems of partial differential equations, like the Euler system.
+Now we will look at the Godunov method, a finite-volumes method designed to solve hyperbolic systems of partial differential equations such as the Euler system.
 
 === The finite volumes method <finite_volumes>
 #let ub = $bold(overline(u))$
@@ -549,7 +545,7 @@ The finite volume method results from considering the integral form of conservat
 $
 dif/(dif t) integral_V bold(u) dif v + integral_Sigma cal(H) dot n dif sigma = 0
 $
-where $u$ is the conserved quantity vector, $V$ the control volume, $Sigma$ the boundary of $V$, $cal(H)$ the flux tensor and $n$ the outward pointing normal to $Sigma$. 
+where $u$ is the conserved quantity vector, $V$ the control volume, $Sigma$ the boundary of $V$, $cal(H) = (bold(F), bold(G), bold(H))$ the flux tensor and $n$ the outward pointing normal to $Sigma$. 
 This is then enforced on each cell of a given discretization of the domain.
 
 
@@ -612,23 +608,27 @@ ub_i^(n+1) = ub_i^n - (Delta t)/abs(V_i)  sum_(Sigma_k in Sigma) abs(Sigma_k)  T
 $
 
 // CFL in multi-d ? voir cours chap 3.
-// faire les calculs pour euler
+
+=== Exact Riemann Solvers 
+
+A key aspect to Godunov's method is computing the solution to the Riemann problem @riemann_problem. 
+These can be solved exactly using an algorithm called an _exact Riemann solver_.
 
 ==== Riemann solvers for linear systems <riemann_linear>
 
-When the system is linear we have independent transport equations on the characteristic variables $bold(v)_i$ each advected with a speed $lambda_i$. 
+When the system is linear we have independent transport equations on the characteristic variables $v_i$ each advected with a speed $lambda_i$. 
 The solution to the individual Riemann problems are given by
 $
-bold(v)_i (x,t) = cases(
-  bold(v)_(L,i) "if" x/t > lambda_(i),
-  bold(v)_(R,i) "else",
+v_i (x,t) = cases(
+  v_(L,i) "if" x/t < lambda_(i),
+  v_(R,i) "else",
 )
 $
-The full solution is then just a superposition of all these individual solution, $bold(u)(x,t) = sum bold(v)_i (x,t)$.
+The full solution is then just a superposition of all these individual solution, $bold(u)(x,t) = sum v_i (x,t) bold(r)_i$.
 Finally the flux is computed by $F(bold(u)(0,t))$.
 
-This can be simplified, as we are only interested in $bold(u)(0,t)$ we can only determine $bold(v)_(i)(0,t)$
-If $lambda_i>0$ the flow goes to the right then $bold(v)_i = bold(v)_(L,i)$ on the contrary if $lambda_i<0$, $bold(v)_i = v_(R,i)$.
+This can be simplified, as we are only interested in $bold(u)(0,t)$ we can only determine $v_(i)(0,t)$.
+If $lambda_i>0$ the flow goes to the right then $v_i = v_(L,i)$ on the contrary if $lambda_i<0$, $v_i = v_(R,i)$ and finally $bold(u)(0,t) = sum_i v_i bold(r)_i$.
 
 
 #example("The wave equations")[
@@ -669,24 +669,36 @@ bold(v)_t + mat(c, 0; 0, -c) bold(v)_x = 0
 $
 
 We obtain two independent transport equations for each characteristic variable. One is advected to the right with characteristic speed $c$ and the other is advected to the left with a characteristic speed $-c$.
-Finally we can use the upwind method and compute the flux.
+
+This gives $v_1(0,t) = v_(1,L)$ and $v_2 = v_(2,R)$ and 
 $
-F(u(0,t)) = 
+bold(u)(0,t) &= v_(1,L) bold(r)_1 + v_(2,R) bold(r)_2\
+&=(u_L/2 + p_L/(2 rho c)) vec(1, rho c)  + (u_R/2 - p_R/(2 rho c)) vec(1, -rho c)\
+&=1/2 vec(u_L+u_R + (p_L - p_R)/(rho c), (u_L-u_R) rho c + (p_L + p_R))
+$
+Finlly the Godunov flux is
+$
+F(u(0,t)) =1/2 vec((u_L-u_R) rho c + (p_L + p_R)/rho, kappa (u_L+u_R + (p_L - p_R)/(rho c)))
 $
 ]
+
+// insert 2 images of advection in Julia
+// comment on observed numerical diffusion
 
 
 ==== Riemann Solvers for non-linear systems
 
 As we know a more complicated case arises when the characteristic speeds depend on $bold(u)$ resulting in non-linear relationships between the state $bold(u)$ and the flux.
-For the scalar case with a convex or concave flux, we have to distinguish between shocks and rarefactions.
-We solve them using either the Rankine-Hugoniot conditions or the self similarity solution.
+As usual let's start with the scalar case with convex or concave flux.
+In this case we only have one characteristic that is genuinely non linear.
+The shock case is solved using the Rankine Hugoniot condition and the rarefaction one using the self similarity solution.
 
 #example("Burgers' equation")[
 
-  The Burgers' equation is given by @burgers is a non linear scalar conservation law with a convex flux.
+  The Burgers' equatio, given by @burgers, is a non linear scalar conservation law with a convex flux.
 
-When $u_L > u_R$ we have a shock. To compute its speed and direction, we use the _Rankine-Hugoniot Condition_ @rankine-hugoniot: 
+When $u_L > u_R$, $lambda(u_L) > lambda(u_R)$ and we have a shock.
+To compute its speed and direction, we use the _Rankine-Hugoniot Condition_ @rankine-hugoniot: 
 $
 1/2 (u_R^2 - u_L^2) = S (u_R - u_L)
 $
@@ -703,7 +715,10 @@ u(x,t) = cases(
               )
 $
 
-Now for the case $u_L < u_R$ we get a rarefaction. The head and tail are given by the flux of the left and right states and we interpolate linearly inbetween them. The solution is given by : 
+Now for the case $u_L < u_R$ we get a rarefaction as $lambda(u_L) < lambda(u_R)$.
+The speed of the head and tail are given by the characteristic speeds of the left and right states $lambda(u_L) = u_L$ and $lambda(u_R) = u_R$ .
+As $lambda$ is monotone, it can be inverted and from the self similarity solution gives $u(x,t) = lambda^(-1)(x/t) = x/t $ inside the rarefaction.
+Finally the solution to the Riemann problem is given by : 
 $
 u(x,t) = cases(
                 u_L "if" x/t < u_L,
@@ -712,11 +727,16 @@ u(x,t) = cases(
               )
 $
 
-finally we sample the result at $u(0, t)$ and compute the flux as $f(u(0,t)) = u(0,t)$.
+Sampling the result at $u(0, t)$ directly gives us the godunov flux as $f(u(0,t)) = u(0,t)$.
 ]<exampleburger>
 
-Solving non-linear system on the other hand is more complicated and we have to use more tools.
-For more details look at the end of chapter 2 of the book by Toro @toro2009Riemann (pp. 76-85).
+Solving the Riemann problem for non-linear hyperbolic system on the other hand gets more complicated as we have $m$ waves that can't be decoupled from one another like in the linear case.
+Instead we start from leftmost state and use the properties of the different waves we can encounter, like the Rankine Hugoniot conditions for shocks and the Generalized Riemann invariants across rarefactions.
+Each wave supplies $m-1$ relations and therefore leaves one free parameter.
+So waliking across the $m$ waves leaves $m$ unknowns that we can close by imposing the last state to equal the $bold(u)_R$ giving $m$ conditions.
+For the Euler equations this reduces to a single scalar equation, solved by a root-finding method as detailed in @exact_riemann.
+
+For more details look at the end of chapter 2 and chapter 3 of the book by Toro @toro2009Riemann (pp. 76-85, pp. 115-138).
 
 ==== The exact Riemann Solver for the Euler equations <exact_riemann>
 
@@ -772,7 +792,6 @@ or
 $
 S_R = u_R + a_R sqrt((gamma+1)/(2 gamma) p^* /p_R + (gamma -1)/(2 gamma))
 $
-with $K$ being either left or right.
 
 When the pressure in the star region is smaller than the exterior one, we have a rarefaction wave. We get the density from the isentropic law 
 $
@@ -798,12 +817,51 @@ The solution inside a rarefaction fan can be found using the Generalised Riemann
 
 Finally we can sample the solution at $(0,t)$ and compute the flux for our finite volume solver.
 
-This solver is exact but may not be computationally friendly for big problems as we have to solve a root finding problem. Furthermore it doesn't allow for vacuum (division by zero) which can happen when removing all the density of a cell.
+This solver is exact but may not be computationally friendly for big problems as we have to solve a root finding problem.
+Furthermore it doesn't allow for vacuum (division by zero) which can happen when removing all the density of a cell.
 
 
-==== Approximate Riemann Solvers for the Euler system
+=== Approximate Riemann Solvers for the Euler system
 
-=== Managing Boundary conditions
+In order to reduce the computational complexity of the godunov's method, many approximate Riemann solvers have been developed.
+The first called _approximate state Riemann Solvers_ give an estimate of $bold(u)^*(0,t)$ and then compute the flux normally.
+Others like HLL, HLLC and Roe's solvers approximate the flux $F(bold(u)^* (0, t))$ directly.
 
-=== Computing timestep on unstructured meshes
+==== Approximate state RS
+
+The first type of approximation done is replacing the exact value of $p^*$ found by Newton method by a closed form estimate.
+The rest of the algorithm stays the same.
+The primitive variable Riemann solver (PVRS), linearises the primitive variable form of the Euler equations about the arithmetic mean. This gives $p^* = 1/2 (p_L + p_R) - 1/2 (u_R - u_L)macron(rho)macron(a)$, see @toro2009Riemann p299.
+Another possibility is to assume that both non linear waves are of the same type (either two shocks or two rarefactions) which makes it possible to determine $p^*$ without finding a root.
+These are called the two-rarefaction Riemann solver (TRRS) and the two-shocks Riemann solver (TSRS).
+
+These solvers are useful to accelerate the Godunov method on parts where the flow is simple.
+Then using the exact Riemann solver only on large gradients and approximate state Riemann solver on smooth parts of the flow result in _Adaptive Riemann solvers_.
+
+==== HLL and HLLC
+
+The HLL solver assumes that there is no middle contact wave and thus there is a single unknown state $bold(u)^("HLL")$.
+This makes it possible to directly compute the flux, see @toro2009Riemann chapter 10.
+It is positivity preserving and is entropy satisfying by construction making it very robust.
+However, removing the contact wave creates excessive dissipation smearing contacts and shear waves.
+An improvement is to restore a middle contact wave which results in the HLLC method.
+Both of these methods approximate the two or three waves speeds and with the usual condition on each wave this gives a closed form solution.
+
+==== Roe's solver
+
+The idea of Roe's solver is to linearize the problem and use the exact linear Riemannn solver which is much simpler.
+This means replacing the jacobian of the flux $A(bold(u))$ by a constant matrix $tilde(A)(bold(u)_L, bold(u)_R)$ that fulfills the three key properties : 
+- $tilde(A)(bold(u), bold(u)) = A(bold(u))$
+- $tilde(A)(bold(u)_L, bold(u)_R)$ should be hyperbolic
+- $tilde(A)(bold(u)_L - bold(u)_R) = F(bold(u)_R) - F(bold(u)_L)$
+
+For the Euler equation it is obtained by evaluating the jacobian at the Roe averages, see @toro2009Riemann chapter 11.
+
+As the only wve types in linear systems are discontinuities, this means that Roe's solver represents rarefactions with a discontinuity.
+This can lead to expansion shocks that don't fulfill Lax's entropy condition.
+It thus requires an _entropy fix_.
+
+// === Managing Boundary conditions
+//
+// === Computing timestep on unstructured meshes
 

@@ -21,11 +21,8 @@
 #smallcaps(text("Internship Report", size: 2em, weight: "bold"))\
 // #smallcaps(text("Analysis of Instabilities in Numerical Schemes for Hypersonic Flows", size: 2em, weight: "bold"))
 
-#v(2fr)
+#v(3fr)
 
-// #image("assets/lorenz_pure_big.jpg", height: 35%)
-
-#v(2fr)
 
 
 #smallcaps(text("Basile Mouret", size: 1.2em, weight: "bold"))

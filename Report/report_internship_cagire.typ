@@ -1,7 +1,7 @@
 // Test equation
 // ------------------- config -------------------
 
-#set page(margin:2.5cm)
+#set page(margin:2.0cm)
 
 #set text(font:"New Computer Modern", size:12pt)
 
