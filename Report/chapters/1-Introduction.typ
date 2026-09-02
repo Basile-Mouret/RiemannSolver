@@ -4,7 +4,7 @@
 
 When simulating supersonic flows, viscosity is often neglected as this results in simple predictable behaviours. 
 These flows can be solved using computationally friendly numerical methods like finite volumes.
-However in some specific cases these simple methods are plagued by numerical artifacts.
+However in specific cases these simple methods are plagued by numerical artifacts.
 This internship is focused on understanding these numerical methods and the observed instabilities.
 A first objective is to implement a first order finite volume method with different Riemann solvers for the Euler equations.
 Afterwards, we will study test cases that triggers grid-aligned numerical instabilities and add them to the AeroSol software @AeroSol.

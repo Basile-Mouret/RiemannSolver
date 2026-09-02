@@ -3,7 +3,7 @@
 #let num(eq) = math.equation(block: true, supplement:none, numbering: it => {numbering("(1.1)", counter(heading).get().first(), it)}, eq)
 = Implementation in Julia
 
-In order to truely understand the computational side of Godunov's method, I implemented the algorithm in Julia.
+In order to truely understand the computational side of Godunov's method, I implemented it in Julia.
 It is a high level programming language designed for scientific computing, ideal for quick implementations that require performant code.
 
 == Structure of the code
